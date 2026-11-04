@@ -322,7 +322,7 @@ def mutate_tree_advanced(root: TreeNode, rng: random.Random, *,
         replacement = target.children[rng.randrange(len(target.children))] if isinstance(
             target, SequenceNode) else target.body
     elif mode == "point" and isinstance(target, Primitive):
-        replacement = Primitive(rng.choice(tuple(Op)[-4:]), rng.randint(1, 5))
+        replacement = Primitive(rng.choice((Op.MOVE, Op.GATHER, Op.REST, Op.COOPERATE)), rng.randint(1, 5))
     else:
         remaining = max(1, max_depth - len(path))
         replacement = random_tree(rng, max_depth=min(remaining, 8))
