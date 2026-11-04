@@ -43,6 +43,11 @@ jobs:
           print("NSGA-II reference:", result["nsga2_reference_benchmark"]["reference"])
           print("Tree GP replicates:", len(result["tree_vs_linear_gp"]["replicates"]))
           empirical = result["empirical_calibration"]
+          for name, model in empirical["naive_baselines"]["results"].items():
+              print(name, "holdout log-RMSE:",
+                    model["holdout_log_rmse"], "prey:",
+                    model["holdout_log_rmse_prey"], "predators:",
+                    model["holdout_log_rmse_predators"])
           for name, model in empirical["ode_reference_calibration"]["models"].items():
               print(name, "holdout log-RMSE:",
                     model["holdout_log_rmse"], "prey:",
