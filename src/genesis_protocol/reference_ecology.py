@@ -10,8 +10,8 @@ import csv
 import math
 from collections.abc import Callable, Sequence
 from dataclasses import asdict, dataclass
-from pathlib import Path
 from itertools import pairwise
+from pathlib import Path
 
 
 @dataclass(frozen=True, slots=True)
