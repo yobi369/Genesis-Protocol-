@@ -559,9 +559,138 @@ def run_tree_vs_linear_gp(seeds: Sequence[int]) -> dict[str, Any]:
     }
 
 
-def run_empirical_calibration(data_path: str | Path) -> dict[str, Any]:
+def calibrate_spatial_to_empirical(
+    observations: Sequence[PopulationPoint], seeds: Sequence[int]
+) -> dict[str, Any]:
+    """Calibrate a small spatial-model grid on training years and score holdout years.
+
+    Observation scales are explicit nuisance parameters because pelt indices are
+    not direct animal counts. The current spatial model has no predator
+    reproduction; its inability to track predator increases is reported rather
+    than hidden by a more flexible observation map.
+    """
+    if len(observations) < 10 or len(seeds) < 30:
+        raise ValueError("spatial empirical calibration needs >=10 observations and 30 seeds")
+    split = int(len(observations) * 0.70)
+    initial = observations[0]
+    rows = []
+    candidates = []
+    for regrowth in (0, 1, 2, 3):
+        for energy in (8, 12, 16):
+            config = SpatialConfig(
+                width=12, height=12, prey=max(1, round(initial.prey)),
+                predators=max(1, round(initial.predators)),
+                resource_regrowth=regrowth, steps=len(observations) - 1,
+                initial_energy=energy,
+            )
+            trajectories = []
+            replicate_rows = []
+            for seed in seeds:
+                result = SpatialEcosystem(config, seed=seed).run()
+                prey_series = [float(config.prey)] + [float(point.prey) for point in result.trajectory]
+                predator_series = [float(config.predators)] + [
+                    float(point.predators) for point in result.trajectory
+                ]
+                trajectories.append((prey_series, predator_series))
+                replicate_rows.append({
+                    "seed": seed,
+                    "final_prey": prey_series[-1],
+                    "final_predators": predator_series[-1],
+                    "mean_prey": statistics.mean(prey_series),
+                    "mean_predators": statistics.mean(predator_series),
+                    "predation_events": sum(point.predation_events for point in result.trajectory),
+                    "social_edges_final": result.trajectory[-1].social_edges,
+                })
+            mean_prey = [statistics.mean(item[0][step] for item in trajectories)
+                         for step in range(len(observations))]
+            mean_predators = [statistics.mean(item[1][step] for item in trajectories)
+                              for step in range(len(observations))]
+            for prey_scale in (0.5, 1.0, 1.5, 2.0):
+                for predator_scale in (1.0, 2.0, 4.0, 8.0, 12.0):
+                    prediction = tuple(
+                        PopulationPoint(
+                            observation.time,
+                            mean_prey[index] * prey_scale,
+                            mean_predators[index] * predator_scale,
+                        )
+                        for index, observation in enumerate(observations)
+                    )
+                    train_score = _log_rmse(prediction, observations, 0, split)
+                    holdout_score = _log_rmse(prediction, observations, split, len(observations))
+                    candidates.append({
+                        "resource_regrowth": regrowth,
+                        "initial_energy": energy,
+                        "prey_observation_scale": prey_scale,
+                        "predator_observation_scale": predator_scale,
+                        "training_log_rmse": train_score,
+                        "holdout_log_rmse": holdout_score,
+                        "prediction": prediction,
+                        "replicates": replicate_rows,
+                        "replicate_trajectories": [
+                            {"seed": seed, "prey": prey_series, "predators": predator_series}
+                            for seed, (prey_series, predator_series) in zip(seeds, trajectories)
+                        ],
+                    })
+            rows.append({
+                "resource_regrowth": regrowth,
+                "initial_energy": energy,
+                "replicate_count": len(seeds),
+                "mean_final_prey": statistics.mean(row["final_prey"] for row in replicate_rows),
+                "mean_final_predators": statistics.mean(row["final_predators"] for row in replicate_rows),
+                "replicates": replicate_rows,
+            })
+    candidates.sort(key=lambda item: item["training_log_rmse"])
+    best = candidates[0]
+    return {
+        "model": "Genesis spatial agent-based model",
+        "seed_count_per_parameter_condition": len(seeds),
+        "parameter_conditions": len(rows),
+        "observation_scale_candidates": 20,
+        "chronological_split": {
+            "train_observations": split,
+            "holdout_observations": len(observations) - split,
+            "holdout_start_year": observations[split].time,
+        },
+        "selected_training_parameters": {
+            key: best[key] for key in (
+                "resource_regrowth", "initial_energy", "prey_observation_scale",
+                "predator_observation_scale",
+            )
+        },
+        "training_log_rmse": best["training_log_rmse"],
+        "holdout_log_rmse": best["holdout_log_rmse"],
+        "selected_mean_trajectory": [asdict(point) for point in best["prediction"]],
+        "selected_parameter_replicates": best["replicates"],
+        "selected_parameter_seed_trajectories": best["replicate_trajectories"],
+        "parameter_grid": [
+            {key: candidate[key] for key in (
+                "resource_regrowth", "initial_energy", "prey_observation_scale",
+                "predator_observation_scale", "training_log_rmse", "holdout_log_rmse",
+            )}
+            for candidate in candidates
+        ],
+        "all_spatial_parameter_replicates": rows,
+        "structural_limit": (
+            "Predators do not reproduce in the current spatial engine. A fitted scale "
+            "cannot create predator population increases absent from the mechanism; "
+            "the resulting holdout error is an informative model inadequacy signal."
+        ),
+    }
+
+
+def run_empirical_calibration(
+    data_path: str | Path, seeds: Sequence[int]
+) -> dict[str, Any]:
     observations = load_hudson_bay_csv(data_path)
-    return calibrate_empirical_references(observations)
+    return {
+        "dataset": {
+            "name": "Hudson Bay lynx-hare historical index (1900-1920)",
+            "observations": len(observations),
+            "units": "historical trapping/pelt index; indirect abundance proxy",
+        },
+        "ode_reference_calibration": calibrate_empirical_references(observations),
+        "spatial_model_calibration": calibrate_spatial_to_empirical(observations, seeds),
+    }
 
 
 def run_full_campaign(output: str | Path, *, seed_count: int = 30) -> dict[str, Any]:
@@ -578,7 +707,7 @@ def run_full_campaign(output: str | Path, *, seed_count: int = 30) -> dict[str, 
         "speciation_sensitivity": run_speciation_sensitivity(seeds),
         "nsga2_reference_benchmark": run_nsga2_reference_benchmark(seeds),
         "tree_vs_linear_gp": run_tree_vs_linear_gp(seeds),
-        "empirical_calibration": run_empirical_calibration(empirical_path),
+        "empirical_calibration": run_empirical_calibration(empirical_path, seeds),
         "limitations": [
             "30 seeds are a reproducibility floor, not a power analysis.",
             "Spatial model and well-mixed ODEs have different state spaces and observation processes.",
@@ -608,10 +737,11 @@ def main() -> None:
         "speciation_distributions": list(result["speciation_sensitivity"]["distributions"]),
         "nsga2_cases": sum(len(value) for value in result["nsga2_reference_benchmark"]["results"].values()),
         "tree_gp_replicates": len(result["tree_vs_linear_gp"]["replicates"]),
-        "empirical_holdout": {
+        "empirical_ode_holdout": {
             name: model["holdout_log_rmse"]
-            for name, model in result["empirical_calibration"]["models"].items()
+            for name, model in result["empirical_calibration"]["ode_reference_calibration"]["models"].items()
         },
+        "empirical_spatial_holdout": result["empirical_calibration"]["spatial_model_calibration"]["holdout_log_rmse"],
     }, indent=2))
 
 
