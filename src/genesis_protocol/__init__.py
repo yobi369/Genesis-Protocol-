@@ -9,7 +9,8 @@ from .ecology import (
 )
 from .engine import EvolutionConfig, EvolutionEngine, EvolutionResult
 from .genome import Genome, Instruction, Op
-from .models import Organism\nfrom .program import Program, Action, IfEnergyBelow, IfResourcesBelow, RepeatAction
+from .models import Organism
+from .program import Program, Action, IfEnergyBelow, IfResourcesBelow, RepeatAction
 
 __all__ = [
     "EcologyConfig",
