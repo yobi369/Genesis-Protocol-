@@ -75,6 +75,8 @@ def test_matched_tree_and_linear_grammar_have_identical_action_semantics():
 
 
 def test_deap_reference_selection_matches_genesis_front_on_simple_points():
+    import pytest
+    pytest.importorskip("deap")
     points = ((-1.0, -5.0), (-2.0, -3.0), (-3.0, -2.0), (-5.0, -1.0),
               (-5.0, -5.0), (-4.0, -4.0), (-0.5, -8.0), (-8.0, -0.5))
     ours = nsga2_select(points, 4)
