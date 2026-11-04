@@ -172,6 +172,46 @@ def _log_rmse_species(
     return math.sqrt(sum(value * value for value in errors) / len(errors))
 
 
+def empirical_naive_baselines(
+    observations: Sequence[PopulationPoint],
+    *,
+    train_fraction: float = 0.70,
+) -> dict[str, object]:
+    """Score training-mean and last-observation persistence baselines on holdout."""
+    if len(observations) < 10 or not 0.5 <= train_fraction <= 0.85:
+        raise ValueError("need >=10 observations and train_fraction in [0.5, 0.85]")
+    split = int(len(observations) * train_fraction)
+    train = observations[:split]
+    mean_prey = sum(point.prey for point in train) / split
+    mean_predators = sum(point.predators for point in train) / split
+    mean_prediction = tuple(
+        PopulationPoint(point.time, mean_prey, mean_predators) for point in observations
+    )
+    last = train[-1]
+    persistence_prediction = tuple(
+        PopulationPoint(point.time, last.prey, last.predators) for point in observations
+    )
+    results = {}
+    for name, prediction in (
+        ("training_mean", mean_prediction),
+        ("last_observation_persistence", persistence_prediction),
+    ):
+        results[name] = {
+            "holdout_log_rmse": _log_rmse(prediction, observations, split, len(observations)),
+            "holdout_log_rmse_prey": _log_rmse_species(
+                prediction, observations, split, len(observations), "prey"
+            ),
+            "holdout_log_rmse_predators": _log_rmse_species(
+                prediction, observations, split, len(observations), "predators"
+            ),
+        }
+    return {
+        "split": "same chronological 70/30 split as calibrated models",
+        "train_mean_values": {"prey": mean_prey, "predators": mean_predators},
+        "results": results,
+    }
+
+
 def calibrate_empirical_references(
     observations: Sequence[PopulationPoint],
     *,
