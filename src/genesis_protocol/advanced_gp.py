@@ -57,15 +57,15 @@ def _program_from_tree(tree: SequenceNode) -> Program:
 
 
 def _score(metrics: tuple[float, float, float, float], landscape: str) -> float:
-    gathered, cooperation, energy, instructions = metrics
+    gathered, cooperation, energy, _instructions = metrics
     if landscape == "foraging":
         return gathered + 0.25 * min(cooperation, 10) + 0.05 * energy
     if landscape == "energy_conservation":
-        return energy + 0.15 * gathered - 0.20 * instructions
+        return energy + 0.15 * gathered - 0.25 * cooperation
     if landscape == "cooperation":
         return 2.0 * cooperation + 0.10 * energy + 0.05 * gathered
     if landscape == "balanced":
-        return 0.50 * gathered + 0.50 * cooperation + 0.10 * energy - 0.02 * instructions
+        return 0.50 * gathered + 0.50 * cooperation + 0.10 * energy
     raise ValueError("unknown fitness landscape")
 
 
