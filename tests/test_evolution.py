@@ -89,3 +89,22 @@ def test_cli_writes_json_experiment_record(tmp_path, monkeypatch) -> None:
     record = json.loads((tmp_path / "run.json").read_text(encoding="utf-8"))
     assert record["seed"] == 3
     assert len(record["metrics"]) == 2
+
+
+def test_all_instruction_types_have_explicit_effects() -> None:
+    genome = Genome((
+        Instruction(Op.MOVE, 2),
+        Instruction(Op.GATHER, 2),
+        Instruction(Op.REST, 3),
+        Instruction(Op.COOPERATE, 2),
+    ))
+    result = evaluate(Organism(8, genome), Environment())
+    assert result.resources_gathered == 2
+    assert result.cooperation_actions == 2
+    assert result.energy_remaining == 29
+    assert result.instructions_executed == 4
+
+
+def test_organism_rejects_negative_identity() -> None:
+    with pytest.raises(ValueError):
+        Organism(-1, Genome((Instruction(Op.REST),)))
