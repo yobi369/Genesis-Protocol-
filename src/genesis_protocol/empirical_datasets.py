@@ -135,8 +135,10 @@ def run_bonanza_prey_only_benchmark(
         mean_forecast = [y_mean] * len(holdout)
         persistence_forecast = [train[-1]] * len(holdout)
 
-        def rmse(prediction: list[float]) -> float:
-            return math.sqrt(sum((a - b) ** 2 for a, b in zip(prediction, holdout)) / len(holdout))
+        def rmse(prediction: list[float], actual: list[float] = holdout) -> float:
+            return math.sqrt(
+                sum((a - b) ** 2 for a, b in zip(prediction, actual)) / len(actual)
+            )
 
         site_results.append({
             "site": site,
@@ -152,6 +154,8 @@ def run_bonanza_prey_only_benchmark(
                 "last_observation": rmse(persistence_forecast),
             },
         })
+    if not 0.5 <= train_fraction < 1.0:
+        raise ValueError("train_fraction must be in [0.5, 1)")
     if not site_results:
         raise ValueError("no Bonanza site has enough annual site-level observations")
     return {
