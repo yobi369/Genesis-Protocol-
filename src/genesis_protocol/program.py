@@ -6,8 +6,8 @@ preserves the interpreter's single-instruction branch semantics.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
 import random
+from dataclasses import dataclass
 from typing import TypeAlias
 
 from .genome import Genome, Instruction, Op
