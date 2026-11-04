@@ -16,7 +16,10 @@ genesis-research-validation --seeds 30 --output artifacts/research-validation.js
 
 The workflow uploads `genesis-research-validation-30-seeds` as a 30-day artifact.
 The JSON is the authoritative record; summaries printed in Actions logs are only
-a convenience.
+a convenience. The campaign CLI orchestration module is excluded from the unit
+coverage percentage because this dedicated workflow executes the complete CLI
+end-to-end; the reusable simulation, reference, statistics and interpreter
+modules remain in the measured coverage set.
 
 ## 1. Ecological replicated conditions
 
