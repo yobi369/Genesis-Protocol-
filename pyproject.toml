@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "genesis-protocol"
-version = "0.1.0"
+version = "0.3.0"
 description = "A reproducible evolutionary computing laboratory for software organisms"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -13,10 +13,15 @@ authors = [{ name = "Genesis Protocol contributors" }]
 dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0", "pytest-cov>=5.0", "ruff>=0.6", "mypy>=1.10"]
+dev = ["pytest>=8.0", "pytest-cov>=5.0", "ruff>=0.6", "mypy>=1.10", "playwright>=1.50"]
+research = ["deap>=1.4"]
 
 [project.scripts]
-genesis-run = "genesis_protocol.cli:main"\ngenesis-ecology = "genesis_protocol.ecology_cli:main"
+genesis-run = "genesis_protocol.cli:main"
+genesis-ecology = "genesis_protocol.ecology_cli:main"
+genesis-research-validation = "genesis_protocol.validation:main"
+genesis-advanced-research = "genesis_protocol.advanced_research:main"
+genesis-gp-landscapes = "genesis_protocol.advanced_gp:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -33,3 +38,6 @@ target-version = "py311"
 python_version = "3.11"
 strict = true
 mypy_path = "src"
+
+[tool.coverage.run]
+omit = ["src/genesis_protocol/validation.py"]

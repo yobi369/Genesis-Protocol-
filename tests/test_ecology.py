@@ -64,7 +64,7 @@ def test_dynamic_environment_schedule_changes_by_generation() -> None:
         EnvironmentalPhase(2, resource_supply=9, movement_cost=3),
     )
     result = EcosystemEngine(
-        species, schedule, EcologyConfig(generations=4), seed=12,
+        species, schedule, EcologyConfig(generations=4, initial_energy=1000), seed=12,
     ).run()
     assert [item.resource_supply for item in result.reports] == [50, 50, 9, 9]
 

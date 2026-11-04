@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import random
 from dataclasses import dataclass
 from enum import StrEnum
-import random
 
 
 class Op(StrEnum):
@@ -13,7 +13,10 @@ class Op(StrEnum):
     MOVE = "move"
     GATHER = "gather"
     REST = "rest"
-    COOPERATE = "cooperate"\n    IF_ENERGY_BELOW = "if_energy_below"\n    IF_RESOURCES_BELOW = "if_resources_below"\n    REPEAT_PREVIOUS = "repeat_previous"
+    COOPERATE = "cooperate"
+    IF_ENERGY_BELOW = "if_energy_below"
+    IF_RESOURCES_BELOW = "if_resources_below"
+    REPEAT_PREVIOUS = "repeat_previous"
 
 
 @dataclass(frozen=True, slots=True)
@@ -22,6 +25,8 @@ class Instruction:
     amount: int = 1
 
     def __post_init__(self) -> None:
+        if not isinstance(self.op, Op):
+            raise TypeError("instruction opcode must be an Op value")
         if not 1 <= self.amount <= 5:
             raise ValueError("instruction amount must be between 1 and 5")
 

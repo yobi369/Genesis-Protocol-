@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
 import random
+from dataclasses import asdict, dataclass
 from typing import Any
 
 from .evaluator import evaluate

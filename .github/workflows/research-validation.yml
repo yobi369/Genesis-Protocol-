@@ -1,0 +1,103 @@
+name: Research validation
+
+on:
+  push:
+    branches:
+      - feature/ecological-evolution-lab-v2
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  replicated-research:
+    name: 30-seed research campaign
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install research dependencies
+        run: python -m pip install -e ".[dev,research]"
+      - name: Validate original research implementation
+        run: pytest -q tests/test_research_validation.py
+      - name: Validate advanced ecological and GP experiments
+        run: pytest -q tests/test_advanced_research.py
+      - name: Run original 30-seed validation campaign
+        run: genesis-research-validation --seeds 30 --output artifacts/research-validation.json
+      - name: Download independent Bonanza Creek LTER hare-pellet series
+        run: |
+          mkdir -p data/empirical
+          curl --fail --location --retry 3 --retry-delay 2 \
+            --output data/empirical/69_litter_wood_pellet_1985-2025.csv \
+            'https://www.lter.uaf.edu/data/data-detail/id/php/download_data.php?f=%2Fdata_files%2Fascii%2Ffiles%2F69_litter_wood_pellet_1985-2025.csv'
+          head -n 1 data/empirical/69_litter_wood_pellet_1985-2025.csv
+          sha256sum data/empirical/69_litter_wood_pellet_1985-2025.csv
+      - name: Run predator reproduction and advanced tree-GP campaign
+        run: |
+          genesis-advanced-research --seeds 30 \
+            --bonanza-csv data/empirical/69_litter_wood_pellet_1985-2025.csv \
+            --output artifacts/advanced-research-validation.json
+      - name: Run matched multi-landscape GP campaign
+        run: genesis-gp-landscapes --seeds 30 --output artifacts/matched-gp-landscapes.json
+      - name: Publish campaign summary
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          for name in ("research-validation.json", "advanced-research-validation.json",
+                       "matched-gp-landscapes.json"):
+              data = json.loads(Path("artifacts", name).read_text())
+              print(name, "schema:", data.get("schema", "matched-gp-landscapes"))
+          advanced = json.loads(Path("artifacts/advanced-research-validation.json").read_text())
+          print("Predator holdout changes:", advanced["predator_reproduction"]["holdout_change_vs_baseline"])
+          bonanza = advanced["bonanza_prey_only_validation"]
+          if "file_sha256" in bonanza:
+              print("Bonanza raw source SHA-256:", bonanza["file_sha256"])
+              print("Bonanza site count:", bonanza["benchmark"]["site_count"])
+              print("Bonanza prey-only holdout scores:", bonanza["benchmark"]["mean_site_holdout_log_rmse"])
+          print("Tree operator seed count:", len(advanced["richer_tree_operators"]["replicates"]))
+          gp = json.loads(Path("artifacts/matched-gp-landscapes.json").read_text())
+          for landscape, result in gp["results"].items():
+              print(landscape, "paired tree-minus-linear:", result["paired"]["mean_tree_minus_linear"],
+                    "95% interval:", result["paired"]["bootstrap_95_percentile_interval"])
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: genesis-research-validation-30-seeds
+          path: artifacts/research-validation.json
+          if-no-files-found: error
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        with:
+          name: genesis-advanced-research-30-seeds
+          path: |
+            artifacts/advanced-research-validation.json
+            artifacts/matched-gp-landscapes.json
+          if-no-files-found: error
+          retention-days: 30
+
+  browser-usability:
+    name: Browser workbench usability and scale
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install browser test dependencies
+        run: |
+          python -m pip install -e ".[dev]"
+          python -m playwright install --with-deps chromium
+      - name: Exercise large workbench records in Chromium
+        env:
+          GENESIS_BROWSER_TESTS: "1"
+        run: pytest -q tests/browser/test_lab_workbench.py
