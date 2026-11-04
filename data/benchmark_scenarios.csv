@@ -1,0 +1,6 @@
+scenario,description,resource_supply,resource_regrowth,prey,predators,steps,seed
+resource_abundance,High-resource prey persistence,180,4,30,2,60,101
+resource_scarcity,Low-resource prey persistence,35,1,30,2,60,103
+predator_pressure,Predator-heavy predation dynamics,90,2,30,10,60,107
+resource_collapse,Environmental shock after initial stability,100,2,30,4,60,109
+no_predators,Prey-resource control condition,90,2,30,0,60,113
