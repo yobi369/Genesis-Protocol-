@@ -121,11 +121,11 @@ class SpatialEcosystem:
         self.config = config or SpatialConfig()
         self.seed = seed
         self.rng = random.Random(seed)
-        self.resources = [[2 for _ in range(config.width)] for _ in range(config.height)]
-        self.prey = {i: [self.rng.randrange(config.width), self.rng.randrange(config.height),
-                         config.initial_energy] for i in range(config.prey)}
-        self.predators = {i: [self.rng.randrange(config.width), self.rng.randrange(config.height),
-                              config.initial_energy * 2] for i in range(config.predators)}
+        self.resources = [[2 for _ in range(self.config.width)] for _ in range(self.config.height)]
+        self.prey = {i: [self.rng.randrange(self.config.width), self.rng.randrange(self.config.height),
+                         self.config.initial_energy] for i in range(self.config.prey)}
+        self.predators = {i: [self.rng.randrange(self.config.width), self.rng.randrange(self.config.height),
+                              self.config.initial_energy * 2] for i in range(self.config.predators)}
         self.ties: dict[tuple[int, int], int] = {}
 
     def _move(self, agent: list[int]) -> None:
