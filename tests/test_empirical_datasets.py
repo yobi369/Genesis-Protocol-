@@ -46,3 +46,21 @@ def test_chronological_holdout_keeps_later_years_untouched():
     assert max(row.year for row in train) < min(row.year for row in holdout)
     assert len(train) == 7
     assert len(holdout) == 3
+
+
+def test_bonanza_prey_only_benchmark_keeps_sites_separate_and_holds_out_later_years():
+    from genesis_protocol.empirical_datasets import run_bonanza_prey_only_benchmark
+
+    rows = []
+    for site, scale in (("A", 1.0), ("B", 2.0)):
+        for year in range(1985, 2000):
+            count = (year - 1984) * scale
+            rows.append(HarePelletObservation(year, site, 6, int(count * 6), count))
+    result = run_bonanza_prey_only_benchmark(rows)
+    assert result["site_count"] == 2
+    assert {row["site"] for row in result["site_results"]} == {"A", "B"}
+    assert all(min(row["holdout_years"]) > max(row["train_years"])
+               for row in result["site_results"])
+    assert set(result["mean_site_holdout_log_rmse"]) == {
+        "ar1", "training_mean", "last_observation"
+    }
