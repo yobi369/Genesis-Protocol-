@@ -289,6 +289,7 @@ def run_predator_reproduction_experiment(
         "split": {"train_count": split, "holdout_count": len(observations) - split,
                   "holdout_start": observations[split].time},
         "baseline": baseline,
+        "baseline_seed_errors": baseline_seed_errors,
         "selected_reproductive_model": {
             key: value for key, value in best.items() if key != "replicates"
         },
