@@ -5,16 +5,34 @@ import pytest
 from genesis_protocol.ecology import LineageRecord
 from genesis_protocol.genome import Genome, Instruction, Op
 from genesis_protocol.research import (
-    SpatialConfig, SpatialEcosystem, cluster_genomes, compare_reference_policies,
-    hypervolume_3d, levenshtein_distance, normalized_genome_distance,
-    pareto_convergence, pareto_front_indices, run_reference_model, validate_lineage,
+    SpatialConfig,
+    SpatialEcosystem,
+    cluster_genomes,
+    compare_reference_policies,
+    hypervolume_3d,
+    levenshtein_distance,
+    normalized_genome_distance,
+    pareto_convergence,
+    pareto_front_indices,
+    run_reference_model,
+    validate_lineage,
 )
 from genesis_protocol.statistics import (
-    bootstrap_mean_interval, paired_effect_summary, paired_permutation_test,
+    bootstrap_mean_interval,
+    paired_effect_summary,
+    paired_permutation_test,
 )
 from genesis_protocol.tree_gp import (
-    EnergyGuard, Primitive, RepeatNode, SequenceNode, crossover_trees,
-    evaluate_tree, mutate_tree, random_tree, tree_depth, tree_size,
+    EnergyGuard,
+    Primitive,
+    RepeatNode,
+    SequenceNode,
+    crossover_trees,
+    evaluate_tree,
+    mutate_tree,
+    random_tree,
+    tree_depth,
+    tree_size,
 )
 
 
