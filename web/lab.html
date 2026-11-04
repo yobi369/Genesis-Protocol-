@@ -10,8 +10,13 @@ h1{margin:0}.muted{color:#9eacc6}.toolbar{display:flex;gap:12px;flex-wrap:wrap;a
 button,input,select,textarea{background:#10182b;color:inherit;border:1px solid #526684;border-radius:7px;padding:8px}
 button{cursor:pointer}button:hover{background:#263654}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
 .metric{font-size:1.6rem;font-weight:700}canvas{width:100%;height:260px;background:#10182b;border-radius:8px}
+*,*::before,*::after{box-sizing:border-box}
 table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:8px;border-bottom:1px solid #293754}
-textarea{width:100%;min-height:70px;box-sizing:border-box}svg{width:100%;background:#10182b;border-radius:8px}
+textarea{width:100%;min-height:70px}svg{width:100%;background:#10182b;border-radius:8px}
+pre{max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
+input[type=file]{max-width:100%}
+.toolbar>*{min-width:0}
+canvas{display:block;max-width:100%}
 </style>
 </head>
 <body>
