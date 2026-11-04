@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Genesis Protocol — Research Workbench</title>
+<style>
+:root{color-scheme:dark;font:15px system-ui;background:#0b1020;color:#e8edf8}body{max-width:1200px;margin:auto;padding:24px}
+header,.panel{background:#151e33;border:1px solid #293754;border-radius:12px;padding:16px;margin:12px 0}
+h1{margin:0}.muted{color:#9eacc6}.toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+button,input,select,textarea{background:#10182b;color:inherit;border:1px solid #526684;border-radius:7px;padding:8px}
+button{cursor:pointer}button:hover{background:#263654}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.metric{font-size:1.6rem;font-weight:700}canvas{width:100%;height:260px;background:#10182b;border-radius:8px}
+table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:8px;border-bottom:1px solid #293754}
+textarea{width:100%;min-height:70px;box-sizing:border-box}svg{width:100%;background:#10182b;border-radius:8px}
+</style>
+</head>
+<body>
+<header><h1>Genesis Protocol</h1><p class="muted">Local-first evolutionary experiment manager · JSON import/export · no account or network required</p>
+<div class="toolbar"><label>Import experiment JSON <input id="files" type="file" accept=".json,application/json" multiple></label>
+<button id="export">Export manifest</button><span id="status" class="muted">No experiments loaded</span></div></header>
+<section class="panel"><div class="toolbar"><label>Experiment <select id="run"></select></label>
+<label>Generation <input id="generation" type="range" min="0" max="0" value="0"></label><span id="generation-label">—</span></div>
+<div class="cards"><div class="panel">Population<div class="metric" id="population">—</div></div>
+<div class="panel">Mean resources<div class="metric" id="resources">—</div></div>
+<div class="panel">Mean survival<div class="metric" id="survival">—</div></div>
+<div class="panel">Pareto front<div class="metric" id="pareto">—</div></div></div>
+<canvas id="chart" width="1100" height="260" aria-label="Experiment trajectory"></canvas></section>
+<section class="panel"><h2>Run comparison</h2><div class="toolbar"><label>Baseline <select id="base"></select></label><label>Candidate <select id="candidate"></select></label><button id="compare">Compare summaries</button></div><pre id="comparison" class="muted">Load at least two runs to compare.</pre></section>
+<section class="panel"><h2>Species and lineage</h2><table><thead><tr><th>Species</th><th>Population</th></tr></thead><tbody id="species"></tbody></table>
+<svg id="lineage" viewBox="0 0 1000 220" role="img" aria-label="Lineage relationships"></svg></section>
+<section class="panel"><h2>Research notes</h2><textarea id="notes" placeholder="Record hypotheses, deviations, exclusions, and interpretation. Notes are local to this browser session."></textarea></section>
+<script>
+'use strict';
+const runs=[];const el=id=>document.getElementById(id);
+const safe=(v)=>JSON.stringify(v,null,2);
+function addRun(data,name){if(!data||!Array.isArray(data.reports))throw Error('JSON must contain a reports array');
+runs.push({name,data});for(const id of ['run','base','candidate']){const o=document.createElement('option');o.value=String(runs.length-1);o.textContent=name;el(id).append(o)}
+el('status').textContent=runs.length+' experiment(s) loaded';draw()}
+el('files').addEventListener('change',async event=>{for(const file of event.target.files){try{addRun(JSON.parse(await file.text()),file.name)}catch(error){el('status').textContent='Import failed: '+error.message}}});
+function selected(){return runs[Number(el('run').value)]}
+function draw(){if(!runs.length)return;const run=selected();const reports=run.data.reports;const slider=el('generation');slider.max=String(Math.max(0,reports.length-1));slider.value=String(Math.min(Number(slider.value),reports.length-1));
+const index=Number(slider.value),r=reports[index];if(!r)return;el('generation-label').textContent='Generation '+r.generation;
+el('population').textContent=Object.values(r.species_population||{}).reduce((a,b)=>a+b,0);
+el('resources').textContent=Number(r.mean_resources||0).toFixed(2);el('survival').textContent=Number(r.mean_survival||0).toFixed(2);
+el('pareto').textContent=r.pareto_front_size??'—';
+const body=el('species');body.replaceChildren();for(const [name,count] of Object.entries(r.species_population||{})){const tr=document.createElement('tr');for(const value of [name,count]){const td=document.createElement('td');td.textContent=value;tr.append(td)}body.append(tr)}
+const canvas=el('chart'),ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);const values=reports.map(x=>Number(x.mean_resources||0)),max=Math.max(1,...values);
+ctx.beginPath();ctx.lineWidth=3;ctx.strokeStyle='#8bb7ff';values.forEach((v,i)=>{const x=35+i*(canvas.width-70)/Math.max(1,values.length-1),y=canvas.height-25-v/max*(canvas.height-55);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.stroke();
+const svg=el('lineage');svg.replaceChildren();const ns='http://www.w3.org/2000/svg',records=(run.data.lineage||[]).filter(x=>x.generation_born<=r.generation).slice(-180),positions=new Map(),groups=new Map();
+for(const item of records){if(!groups.has(item.generation_born))groups.set(item.generation_born,[]);groups.get(item.generation_born).push(item)}
+const height=Math.max(220,(r.generation+1)*56);svg.setAttribute('viewBox','0 0 1000 '+height);
+for(const [g,items] of groups)items.forEach((item,i)=>positions.set(item.organism_id,{x:(i+1)*1000/(items.length+1),y:24+g*52}));
+for(const item of records){const p=positions.get(item.organism_id);for(const parent of item.parent_ids||[]){const q=positions.get(parent);if(q){const line=document.createElementNS(ns,'line');for(const [k,v] of Object.entries({x1:q.x,y1:q.y,x2:p.x,y2:p.y,stroke:'#526684'}))line.setAttribute(k,v);svg.append(line)}}}
+for(const item of records){const p=positions.get(item.organism_id),node=document.createElementNS(ns,'circle');node.setAttribute('cx',p.x);node.setAttribute('cy',p.y);node.setAttribute('r','5');node.setAttribute('fill','#8bb7ff');const title=document.createElementNS(ns,'title');title.textContent='Organism '+item.organism_id+' · species '+item.species_id+' · generation '+item.generation_born;node.append(title);svg.append(node)}
+}
+el('run').addEventListener('change',draw);el('generation').addEventListener('input',draw);
+el('compare').addEventListener('click',()=>{if(runs.length<2)return;const a=runs[Number(el('base').value)],b=runs[Number(el('candidate').value)];
+const x=a.data.reports.at(-1)||{},y=b.data.reports.at(-1)||{};el('comparison').textContent=safe({baseline:a.name,candidate:b.name,final_generation:{baseline:x.generation,candidate:y.generation},mean_resources:{baseline:x.mean_resources,candidate:y.mean_resources,difference:Number(y.mean_resources||0)-Number(x.mean_resources||0)},mean_survival:{baseline:x.mean_survival,candidate:y.mean_survival},species_population:{baseline:x.species_population,candidate:y.species_population},note:'Descriptive comparison only; match seeds and use the statistical helpers for inference.'})});
+el('export').addEventListener('click',()=>{const payload={format:'genesis-lab-manifest-v1',created_at:new Date().toISOString(),experiments:runs.map(r=>({name:r.name,seed:r.data.seed,engine_version:r.data.engine_version,config:r.data.config,reports:r.data.reports})),notes:el('notes').value};
+const blob=new Blob([safe(payload)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='genesis-research-manifest.json';a.click();URL.revokeObjectURL(url)});
+</script></body></html>
