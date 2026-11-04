@@ -26,7 +26,7 @@ that these omitted processes are unimportant.
 
 ## Independent empirical datasets
 
-The registry is documented in `data/empirical/README.md`. Candidate sources
+The registry is documented in `data/empirical/README.md`. The BNZ:69 CSV loader in `empirical_datasets.py` aggregates pellet counts only within year/site, retains tray counts, and provides a chronological year-based split. Candidate sources
 include Tetlin NWR (hare pellet quadrats, 1990–2024), Kluane monitoring and
 experimental records, Wood Buffalo (annual hare pellet transects, 2006–2017),
 and Yukon boreal community monitoring. The sources are not interchangeable:
