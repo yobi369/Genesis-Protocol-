@@ -1,0 +1,72 @@
+name: Research validation
+
+on:
+  push:
+    branches:
+      - feature/ecological-evolution-lab-v2
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  replicated-research:
+    name: 30-seed research campaign
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install research dependencies
+        run: python -m pip install -e ".[dev,research]"
+      - name: Validate research implementation
+        run: pytest -q tests/test_research_validation.py
+      - name: Run 30-seed validation campaign
+        run: genesis-research-validation --seeds 30 --output artifacts/research-validation.json
+      - name: Publish campaign summary
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          result = json.loads(Path("artifacts/research-validation.json").read_text())
+          print("Seeds:", result["seed_policy"]["count"])
+          for condition, value in result["ecological_replicates"]["conditions"].items():
+              print(condition, "replicates:", len(value["replicates"]))
+          print("Spatial replicates:", len(result["spatial_reference_comparison"]["replicates"]))
+          print("Speciation distributions:", list(result["speciation_sensitivity"]["distributions"]))
+          print("NSGA-II reference:", result["nsga2_reference_benchmark"]["reference"])
+          print("Tree GP replicates:", len(result["tree_vs_linear_gp"]["replicates"]))
+          for name, model in result["empirical_calibration"]["models"].items():
+              print(name, "holdout log-RMSE:", model["holdout_log_rmse"])
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: genesis-research-validation-30-seeds
+          path: artifacts/research-validation.json
+          if-no-files-found: error
+          retention-days: 30
+
+  browser-usability:
+    name: Browser workbench usability and scale
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install browser test dependencies
+        run: |
+          python -m pip install -e ".[dev]"
+          python -m playwright install --with-deps chromium
+      - name: Exercise large workbench records in Chromium
+        env:
+          GENESIS_BROWSER_TESTS: "1"
+        run: pytest -q tests/browser/test_lab_workbench.py
