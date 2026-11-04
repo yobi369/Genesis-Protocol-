@@ -434,6 +434,10 @@ def run_advanced_campaign(output: str | Path, *, seed_count: int = 30) -> dict[s
         "empirical_dataset_registry": {
             "status": "candidate_sources_documented; raw data import and harmonization pending",
             "sources": [
+                {"name": "Bonanza Creek LTER BNZ:69 hare pellet trays", "years": "1985-2025",
+                 "species": "hare only",
+                 "method": "pellet counts in 1 m2 trays; six trays per plot across 24 control plots",
+                 "url": "https://www.lter.uaf.edu/data/data-detail/id/69"},
                 {"name": "Tetlin NWR snowshoe hare pellet quadrats", "years": "1990-2024",
                  "species": "hare only", "method": "pellet counts across quadrats and sites",
                  "url": "https://catalog.data.gov/dataset/snowshoe-hare-population-monitoring-at-tetlin-national-wildlife-refuge-raw-datas-1990-2024"},
