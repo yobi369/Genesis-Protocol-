@@ -3,10 +3,12 @@ import os
 from pathlib import Path
 
 import pytest
-
-pytestmark = pytest.mark.skipif(os.getenv("GENESIS_BROWSER_TESTS") != "1", reason="browser suite runs in dedicated CI job")
-
 from playwright.sync_api import sync_playwright
+
+pytestmark = pytest.mark.skipif(
+    os.getenv("GENESIS_BROWSER_TESTS") != "1",
+    reason="browser suite runs in dedicated CI job",
+)
 
 
 ROOT = Path(__file__).resolve().parents[2]
