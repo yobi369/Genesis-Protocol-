@@ -126,7 +126,7 @@ class EcosystemResult:
     reports: tuple[GenerationReport, ...]
     lineage: tuple[LineageRecord, ...]
     final_population: tuple[EcologicalOrganism, ...]
-    engine_version: str = "0.2.0"
+    engine_version: str = "0.3.0"
 
     def to_dict(self) -> dict[str, Any]:
         return {
