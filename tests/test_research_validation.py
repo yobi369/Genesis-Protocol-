@@ -1,7 +1,7 @@
-from pathlib import Path
 import math
-import random
+from pathlib import Path
 
+from genesis_protocol.evaluator import evaluate
 from genesis_protocol.genome import Op
 from genesis_protocol.models import Environment, Organism
 from genesis_protocol.program import Action, IfEnergyBelow, Program, RepeatAction
@@ -11,15 +11,14 @@ from genesis_protocol.reference_ecology import (
     simulate_lotka_volterra,
     simulate_rosenzweig_macarthur,
 )
-from genesis_protocol.research import SpatialConfig, SpatialEcosystem, nsga2_select
-from genesis_protocol.evaluator import evaluate
+from genesis_protocol.research import SpatialEcosystem, nsga2_select
 from genesis_protocol.tree_gp import evaluate_tree
 from genesis_protocol.validation import (
-    _deap_select,
-    _program_to_tree,
-    _gp_fitness,
-    _tree_fitness,
     _adjusted_rand,
+    _deap_select,
+    _gp_fitness,
+    _program_to_tree,
+    _tree_fitness,
 )
 
 
