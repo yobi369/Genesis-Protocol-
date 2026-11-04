@@ -12,6 +12,7 @@ import math
 import random
 import statistics
 import time
+from dataclasses import asdict
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
@@ -616,14 +617,12 @@ def calibrate_spatial_to_empirical(
                         for index, observation in enumerate(observations)
                     )
                     train_score = _log_rmse(prediction, observations, 0, split)
-                    holdout_score = _log_rmse(prediction, observations, split, len(observations))
                     candidates.append({
                         "resource_regrowth": regrowth,
                         "initial_energy": energy,
                         "prey_observation_scale": prey_scale,
                         "predator_observation_scale": predator_scale,
                         "training_log_rmse": train_score,
-                        "holdout_log_rmse": holdout_score,
                         "prediction": prediction,
                         "replicates": replicate_rows,
                         "replicate_trajectories": [
@@ -641,6 +640,7 @@ def calibrate_spatial_to_empirical(
             })
     candidates.sort(key=lambda item: item["training_log_rmse"])
     best = candidates[0]
+    best_holdout_score = _log_rmse(best["prediction"], observations, split, len(observations))
     return {
         "model": "Genesis spatial agent-based model",
         "seed_count_per_parameter_condition": len(seeds),
@@ -658,14 +658,14 @@ def calibrate_spatial_to_empirical(
             )
         },
         "training_log_rmse": best["training_log_rmse"],
-        "holdout_log_rmse": best["holdout_log_rmse"],
+        "holdout_log_rmse": best_holdout_score,
         "selected_mean_trajectory": [asdict(point) for point in best["prediction"]],
         "selected_parameter_replicates": best["replicates"],
         "selected_parameter_seed_trajectories": best["replicate_trajectories"],
         "parameter_grid": [
             {key: candidate[key] for key in (
                 "resource_regrowth", "initial_energy", "prey_observation_scale",
-                "predator_observation_scale", "training_log_rmse", "holdout_log_rmse",
+                "predator_observation_scale", "training_log_rmse",
             )}
             for candidate in candidates
         ],
