@@ -24,6 +24,7 @@ from .models import Environment, Organism
 from .program import Action, IfEnergyBelow, Program, RepeatAction
 from .reference_ecology import (
     LotkaVolterraParameters,
+    PopulationPoint,
     RosenzweigMacArthurParameters,
     calibrate_empirical_references,
     load_hudson_bay_csv,
@@ -560,6 +561,21 @@ def run_tree_vs_linear_gp(seeds: Sequence[int]) -> dict[str, Any]:
     }
 
 
+def _population_log_rmse(
+    predicted: Sequence[PopulationPoint],
+    observed: Sequence[PopulationPoint],
+    start: int,
+    stop: int,
+) -> float:
+    errors = []
+    for prediction, actual in zip(predicted[start:stop], observed[start:stop]):
+        errors.extend((
+            math.log1p(prediction.prey) - math.log1p(actual.prey),
+            math.log1p(prediction.predators) - math.log1p(actual.predators),
+        ))
+    return math.sqrt(statistics.mean(value * value for value in errors))
+
+
 def calibrate_spatial_to_empirical(
     observations: Sequence[PopulationPoint], seeds: Sequence[int]
 ) -> dict[str, Any]:
@@ -616,7 +632,7 @@ def calibrate_spatial_to_empirical(
                         )
                         for index, observation in enumerate(observations)
                     )
-                    train_score = _log_rmse(prediction, observations, 0, split)
+                    train_score = _population_log_rmse(prediction, observations, 0, split)
                     candidates.append({
                         "resource_regrowth": regrowth,
                         "initial_energy": energy,
@@ -640,7 +656,7 @@ def calibrate_spatial_to_empirical(
             })
     candidates.sort(key=lambda item: item["training_log_rmse"])
     best = candidates[0]
-    best_holdout_score = _log_rmse(best["prediction"], observations, split, len(observations))
+    best_holdout_score = _population_log_rmse(best["prediction"], observations, split, len(observations))
     return {
         "model": "Genesis spatial agent-based model",
         "seed_count_per_parameter_condition": len(seeds),
