@@ -16,7 +16,7 @@ dependencies = []
 dev = ["pytest>=8.0", "pytest-cov>=5.0", "ruff>=0.6", "mypy>=1.10"]
 
 [project.scripts]
-genesis-run = "genesis_protocol.cli:main"
+genesis-run = "genesis_protocol.cli:main"\ngenesis-ecology = "genesis_protocol.ecology_cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
