@@ -6,18 +6,16 @@ Genesis Protocol is a research-oriented evolutionary computing platform. It mode
 
 > Research status: early-stage implementation. The engine is a deterministic, inspectable evolutionary simulation—not evidence of biological life, general intelligence, or open-ended evolution.
 
-## Current capabilities
+## Capabilities
 
-- Multi-species populations with organism IDs and parent lineage.
-- Shared-resource competition and species-level extinction.
-- Partner-dependent reciprocal cooperation.
-- Scheduled environmental shifts and selection pressures.
-- Three-objective Pareto ranking with crowding distance.
-- Genome-distance speciation events.
-- Linear instruction genomes with conditional branches and bounded repeats.
-- Typed structured genetic-programming nodes and seeded mutation/crossover.
-- Seeded experiment records and paired configuration comparisons.
-- Offline HTML laboratory viewer.
+- Multi-species populations, shared-resource competition, reciprocal cooperation and environmental shifts.
+- Pareto-based selection, genome-distance speciation and organism-level lineage records.
+- Linear and nested tree genetic programming with bounded interpreters.
+- Independent resource-economy reference policies and spatial predator–prey/resource simulations.
+- Persistent local social ties, lineage validation and edit-distance-based genome clustering.
+- Pareto-front reference calculations, 3D hypervolume trajectories and distribution-free paired statistics.
+- Reproducible synthetic benchmark scenarios and a local browser research workbench.
+- Seeded experiment records and an offline HTML run viewer.
 
 ## Quick start
 
@@ -30,7 +28,7 @@ python -m pip install -e ".[dev]"
 pytest
 ```
 
-Run the original single-population baseline:
+Run the original evolutionary baseline:
 
 ```bash
 genesis-run --seed 7 --generations 50 --population 100
@@ -42,23 +40,29 @@ Run the multi-species ecosystem:
 genesis-ecology --seed 7 --generations 40 --population-per-species 30 --output run.json
 ```
 
-Generate the offline research viewer using `genesis_protocol.lab.render_lab`; see [Experiment and Lab Guide](docs/EXPERIMENTS_AND_LAB.md).
+Open [web/lab.html](web/lab.html) in a browser to import JSON experiment records, compare run summaries, inspect trajectories and lineage, annotate the session, and export a manifest. The viewer is local-first and has no server or collaboration backend.
+
+## Research milestone 2
+
+See [Research Milestone 2](docs/RESEARCH_MILESTONE_2.md) for:
+1. Independent reference ecology comparisons.
+2. Predator–prey and renewable-resource dynamics.
+3. Spatial ecosystems and persistent social ties.
+4. Edit-distance speciation and lineage validation.
+5. Independent Pareto-front and hypervolume diagnostics.
+6. Nested tree genetic programming.
+7. Synthetic benchmarks and exploratory distribution-free statistics.
+8. Browser-side experiment management and visualization.
 
 ## Safety model
 
-Organism policies are interpreted by Genesis Protocol's own bounded evaluator. Organisms do not execute arbitrary source code, access the filesystem, open network connections, spawn processes, or import host modules. Evaluation is limited by instruction count and explicit environment state. This is an application-level execution boundary, not a formally verified operating-system sandbox.
+Organism policies are interpreted by bounded application-level evaluators. They do not execute arbitrary source code, access the filesystem, open network connections, spawn processes, or import host modules. These execution boundaries are not formally verified operating-system sandboxes.
 
-## Scientific standards
+## Scientific standards and limitations
 
-A successful run demonstrates only that this implementation optimizes its defined objectives under its defined evaluator. Results require independent seeds, baselines, ablations, uncertainty reporting and holdout experiments. The simple speciation heuristic and ecological interaction model are research abstractions, not validated biological models.
+The reference and spatial models are synthetic, deliberately simplified research instruments. The benchmark CSV is a scenario registry, not an empirical dataset. Speciation clustering is representative-based and order-dependent. Hypervolume requires fixed objective scales and a fixed reference point. Statistical helpers are exploratory; confirmatory work requires a preregistered analysis, adequate power, holdout seeds, external datasets, and independent domain review.
 
-## Documentation
-
-- [Architecture](docs/ARCHITECTURE.md)
-- [Ecological Model](docs/ECOLOGICAL_MODEL.md)
-- [Structured Genetic Programming](docs/GENETIC_PROGRAMMING.md)
-- [Experiment Comparison and Laboratory](docs/EXPERIMENTS_AND_LAB.md)
-- [Scientific Method](docs/SCIENTIFIC_METHOD.md)
+A successful test run validates software behavior, not ecological realism or biological validity. The project makes no claim of general intelligence or open-ended evolution.
 
 ## License
 
