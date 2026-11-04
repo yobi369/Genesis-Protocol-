@@ -6,6 +6,8 @@ Hudson Bay analysis remains an unchanged baseline. Run:
 ```bash
 python -m pip install -e ".[dev,research]"
 genesis-advanced-research --seeds 30 --output artifacts/advanced-research-validation.json
+# After downloading the BNZ:69 raw CSV from the source, add:
+genesis-advanced-research --seeds 30 --bonanza-csv data/empirical/69_litter_wood_pellet_1985-2025.csv --output artifacts/advanced-research-validation.json
 genesis-gp-landscapes --seeds 30 --output artifacts/matched-gp-landscapes.json
 ```
 
