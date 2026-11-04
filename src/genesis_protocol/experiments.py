@@ -8,7 +8,10 @@ from statistics import mean, stdev
 from typing import Any
 
 from .ecology import (
-    EcologyConfig, EcosystemEngine, EnvironmentalPhase, SpeciesDefinition,
+    EcologyConfig,
+    EcosystemEngine,
+    EnvironmentalPhase,
+    SpeciesDefinition,
 )
 
 
