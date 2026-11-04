@@ -462,6 +462,7 @@ def run_advanced_campaign(
                 {"name": "Kluane/Yukon boreal community monitoring", "years": "1973-2022",
                  "species": "hares and multiple carnivores",
                  "method": "annual pellet plots; predator snow-track indices",
+                 "access_note": "underlying CEMP summary data require collaborator permission",
                  "url": "https://www.frontiersin.org/journals/ecology-and-evolution/articles/10.3389/fevo.2023.1187222/full"},
             ],
             "guardrail": (
