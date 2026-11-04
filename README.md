@@ -4,27 +4,20 @@
 
 Genesis Protocol is a research-oriented evolutionary computing platform. It models digital organisms with heritable genomes and bounded behavioral policies; subjects populations to explicit environments, resource constraints, competition and cooperation; and records reproducible evolutionary experiments.
 
-> Research status: early-stage implementation. The initial engine is a deterministic, inspectable evolutionary simulation—not evidence of biological life, general intelligence, or open-ended evolution.
+> Research status: early-stage implementation. The engine is a deterministic, inspectable evolutionary simulation—not evidence of biological life, general intelligence, or open-ended evolution.
 
-## Research goals
+## Current capabilities
 
-- Genetic programming over a deliberately constrained instruction set.
-- Selection, mutation, crossover, reproduction and lineage tracking.
-- Fitness landscapes with explicit, versioned objective functions.
-- Resource-limited environments and measurable ecological interactions.
-- Sandboxed organism evaluation with deterministic resource accounting.
-- Reproducible runs, experiment manifests, metrics and exportable records.
-- Baselines, ablations, parameter sweeps and independent replication.
-
-## Initial implementation
-
-The first milestone provides:
-- Immutable genome and organism records.
-- A small bounded policy instruction set (no arbitrary Python execution).
-- A deterministic environment and fitness evaluator.
-- A seeded evolutionary loop with elitism, tournament selection, mutation and crossover.
-- Generation metrics and a JSON-serializable experiment result.
-- Unit tests for determinism, bounds and evolutionary operators.
+- Multi-species populations with organism IDs and parent lineage.
+- Shared-resource competition and species-level extinction.
+- Partner-dependent reciprocal cooperation.
+- Scheduled environmental shifts and selection pressures.
+- Three-objective Pareto ranking with crowding distance.
+- Genome-distance speciation events.
+- Linear instruction genomes with conditional branches and bounded repeats.
+- Typed structured genetic-programming nodes and seeded mutation/crossover.
+- Seeded experiment records and paired configuration comparisons.
+- Offline HTML laboratory viewer.
 
 ## Quick start
 
@@ -35,30 +28,38 @@ python -m venv .venv
 source .venv/bin/activate
 python -m pip install -e ".[dev]"
 pytest
+```
+
+Run the original single-population baseline:
+
+```bash
 genesis-run --seed 7 --generations 50 --population 100
 ```
 
+Run the multi-species ecosystem:
+
+```bash
+genesis-ecology --seed 7 --generations 40 --population-per-species 30 --output run.json
+```
+
+Generate the offline research viewer using `genesis_protocol.lab.render_lab`; see [Experiment and Lab Guide](docs/EXPERIMENTS_AND_LAB.md).
+
 ## Safety model
 
-Organism policies are interpreted by Genesis Protocol's own bounded evaluator. Organisms do not execute arbitrary source code, access the filesystem, open network connections, spawn processes, or import host modules. Evaluation is limited by instruction count and explicit environment state. This is a safer design boundary than attempting to run untrusted Python in-process; it is not a claim of a formally verified operating-system sandbox.
-
-## Reproducibility
-
-A run records its seed, configuration, engine version, environment identifier, and per-generation metrics. Identical inputs are expected to produce identical results within the same supported engine version. Cross-version reproducibility must be tested and is not assumed.
-
-## Roadmap
-
-1. Core evolutionary engine and deterministic experiments.
-2. Multi-objective fitness, dynamic environments and ecological interactions.
-3. Genetic programming and structural genome evolution.
-4. Experiment registry, lineage analysis and visualization.
-5. Benchmark suite, statistical analysis and independent reproduction.
-6. Optional distributed execution and external integrations after the core is validated.
+Organism policies are interpreted by Genesis Protocol's own bounded evaluator. Organisms do not execute arbitrary source code, access the filesystem, open network connections, spawn processes, or import host modules. Evaluation is limited by instruction count and explicit environment state. This is an application-level execution boundary, not a formally verified operating-system sandbox.
 
 ## Scientific standards
 
-Results must be compared with explicit baselines and reported with replicate counts, uncertainty and configuration provenance. Fitness improvements on a designed task are evidence about that task and implementation—not proof of general intelligence or open-ended evolution.
+A successful run demonstrates only that this implementation optimizes its defined objectives under its defined evaluator. Results require independent seeds, baselines, ablations, uncertainty reporting and holdout experiments. The simple speciation heuristic and ecological interaction model are research abstractions, not validated biological models.
+
+## Documentation
+
+- [Architecture](docs/ARCHITECTURE.md)
+- [Ecological Model](docs/ECOLOGICAL_MODEL.md)
+- [Structured Genetic Programming](docs/GENETIC_PROGRAMMING.md)
+- [Experiment Comparison and Laboratory](docs/EXPERIMENTS_AND_LAB.md)
+- [Scientific Method](docs/SCIENTIFIC_METHOD.md)
 
 ## License
 
-License selection is intentionally pending. Do not assume the project is licensed for redistribution until a license file is added.
+License selection is pending. Do not assume the project is licensed for redistribution until a license file is added.
