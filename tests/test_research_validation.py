@@ -9,6 +9,7 @@ from genesis_protocol.models import Environment, Organism
 from genesis_protocol.program import Action, IfEnergyBelow, Program, RepeatAction
 from genesis_protocol.reference_ecology import (
     calibrate_empirical_references,
+    empirical_naive_baselines,
     load_hudson_bay_csv,
     simulate_lotka_volterra,
     simulate_rosenzweig_macarthur,
@@ -39,6 +40,8 @@ def test_empirical_index_load_and_chronological_holdout_calibration():
     data = load_hudson_bay_csv(ROOT / "data/empirical/hudson_bay_lynx_hare_1900_1920.csv")
     assert len(data) == 21
     assert data[0].time == 1900
+    baseline = empirical_naive_baselines(data)
+    assert baseline["results"]["training_mean"]["holdout_log_rmse"] > 0
     result = calibrate_empirical_references(data)
     assert result["train_observations"] == 14
     assert result["holdout_observations"] == 7
