@@ -19,15 +19,15 @@ from .genome import Op
 from .reference_ecology import PopulationPoint, load_hudson_bay_csv
 from .research import SpatialConfig, SpatialEcosystem
 from .tree_gp import (
+    EnergyGuard,
+    Primitive,
+    RepeatNode,
+    SequenceNode,
+    TreeNode,
+    evaluate_tree,
     random_tree,
     tree_depth,
     tree_size,
-    evaluate_tree,
-    Primitive,
-    SequenceNode,
-    EnergyGuard,
-    RepeatNode,
-    TreeNode,
 )
 
 
