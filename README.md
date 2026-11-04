@@ -42,6 +42,25 @@ genesis-ecology --seed 7 --generations 40 --population-per-species 30 --output r
 
 Open [web/lab.html](web/lab.html) in a browser to import JSON experiment records, compare run summaries, inspect trajectories and lineage, annotate the session, and export a manifest. The viewer is local-first and has no server or collaboration backend.
 
+## Research validation campaign
+
+Install the independent DEAP reference implementation and run the reproducible campaign (minimum 30 paired seeds):
+
+```bash
+python -m pip install -e ".[dev,research]"
+genesis-research-validation --seeds 30 --output artifacts/research-validation.json
+```
+
+The campaign compares three ecological resource regimes, spatial dynamics against Lotka–Volterra and Rosenzweig–MacArthur ODE references, genome clustering across distributions and thresholds, NSGA-II selection against DEAP, and matched tree/linear GP. It also calibrates the reference ODEs against a short historical Hudson Bay lynx–hare pelt-index series with a chronological holdout. See [Research Validation Protocol](docs/RESEARCH_VALIDATION_PROTOCOL.md) and [empirical data provenance](data/empirical/README.md). The GitHub Actions research workflow runs the 30-seed campaign and uploads its raw JSON result as an artifact.
+
+Run the browser-scale test locally after installing Chromium with Playwright:
+
+```bash
+python -m playwright install chromium
+GENESIS_BROWSER_TESTS=1 pytest -q tests/browser/test_lab_workbench.py
+```
+
+
 ## Research milestone 2
 
 See [Research Milestone 2](docs/RESEARCH_MILESTONE_2.md) for:
