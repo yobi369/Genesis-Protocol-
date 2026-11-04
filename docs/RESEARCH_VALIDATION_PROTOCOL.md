@@ -73,12 +73,17 @@ expressivity against all linear bytecode features.
 ## 6. Empirical pattern check
 
 The repository includes a 1900–1920 Hudson Bay lynx–hare historical
-pelt-index transcription. A transparent coarse grid calibration fits
-Lotka–Volterra and Rosenzweig–MacArthur models on the first 70% of years and
-reports the final 30% as untouched chronological holdout. Pelt/trapping counts
-are indirect abundance proxies, not standardized census counts. The time series
-is short and must not be treated as ground truth or as a decisive model
-validation. Provenance and caveats are in `data/empirical/README.md`.
+pelt-index transcription. Coarse grid calibration fits Lotka–Volterra and
+Rosenzweig–MacArthur ODEs on the first 70% of years and reports only the selected
+models' final 30% holdout scores. The spatial agent model is also calibrated on
+12 parameter conditions, each with 30 paired seeds, with explicit observation
+scales; its holdout is evaluated only after selecting on training error. The
+current spatial engine has no predator reproduction, so a poor lynx holdout
+score is an expected structural diagnostic, not a reason to tune against the
+holdout. Pelt/trapping counts are indirect abundance proxies, not standardized
+census counts. The time series is short and must not be treated as ground truth
+or as a decisive model validation. Provenance and caveats are in
+`data/empirical/README.md`.
 
 For stronger empirical validation, a future study should use the USFWS Tetlin
 Refuge hare monitoring data or the Kluane experimental snowshoe-hare datasets,
