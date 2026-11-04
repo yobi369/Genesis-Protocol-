@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import random
+from collections.abc import Sequence
 from math import sqrt
 from statistics import mean, stdev
-from typing import Sequence
 
 
 def paired_permutation_test(differences: Sequence[float], *, permutations: int = 10000,
