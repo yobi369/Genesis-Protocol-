@@ -19,7 +19,7 @@ research = ["deap>=1.4"]
 [project.scripts]
 genesis-run = "genesis_protocol.cli:main"
 genesis-ecology = "genesis_protocol.ecology_cli:main"
-genesis-research-validation = "genesis_protocol.validation:main"
+genesis-research-validation = "genesis_protocol.validation:main"\ngenesis-advanced-research = "genesis_protocol.advanced_research:main"\ngenesis-gp-landscapes = "genesis_protocol.advanced_gp:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
