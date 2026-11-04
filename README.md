@@ -51,7 +51,7 @@ python -m pip install -e ".[dev,research]"
 genesis-research-validation --seeds 30 --output artifacts/research-validation.json
 ```
 
-The campaign compares three ecological resource regimes, spatial dynamics against Lotka–Volterra and Rosenzweig–MacArthur ODE references, genome clustering across distributions and thresholds, NSGA-II selection against DEAP, and matched tree/linear GP. It also calibrates the reference ODEs against a short historical Hudson Bay lynx–hare pelt-index series with a chronological holdout. See [Research Validation Protocol](docs/RESEARCH_VALIDATION_PROTOCOL.md) and [empirical data provenance](data/empirical/README.md). The GitHub Actions research workflow runs the 30-seed campaign and uploads its raw JSON result as an artifact.
+The campaign compares three ecological resource regimes, spatial dynamics against Lotka–Volterra and Rosenzweig–MacArthur ODE references, genome clustering across distributions and thresholds, NSGA-II selection against DEAP, and matched tree/linear GP. It also calibrates the reference ODEs against a short historical Hudson Bay lynx–hare pelt-index series with a chronological holdout. See [Research Validation Protocol](docs/RESEARCH_VALIDATION_PROTOCOL.md), [measured 30-seed results](docs/RESEARCH_VALIDATION_RESULTS.md), and [empirical data provenance](data/empirical/README.md). The GitHub Actions research workflow runs the 30-seed campaign and uploads its raw JSON result as an artifact.
 
 Run the browser-scale test locally after installing Chromium with Playwright:
 
