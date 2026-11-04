@@ -32,7 +32,7 @@ table{border-collapse:collapse;width:100%;margin-top:12px}td,th{text-align:left;
 <div class="card"><div class="muted">Genotype diversity</div><div class="metric" id="diversity">—</div></div></div>
 <canvas id="chart" width="1000" height="280" aria-label="Evolution metrics chart"></canvas>
 <h2>Species populations</h2><table><thead><tr><th>Species</th><th>Population</th></tr></thead><tbody id="species-table"></tbody></table>
-<h2>Lineage records</h2><p class="muted">The run contains <strong id="lineage-count">0</strong> organism lineage records. Export the source JSON for full parent-child reconstruction.</p>
+<h2>Evolutionary lineage tree</h2><p class="muted">Showing parent-to-offspring relationships through the selected generation. Hover over a node for its organism, species and birth generation.</p><svg id="lineage-tree" viewBox="0 0 1000 180" role="img" aria-label="Evolutionary lineage tree" style="width:100%;background:#10182b;border-radius:12px"></svg><p class="muted">Total lineage records: <strong id="lineage-count">0</strong>. Export the source JSON for complete lineage reconstruction.</p>
 <script>
 const data=__DATA__;
 const reports=data.reports||[];const species=data.species||[];
@@ -56,6 +56,19 @@ ctx.strokeStyle='#8bb7ff';ctx.lineWidth=3;ctx.beginPath();
 values.forEach((v,n)=>{const x=40+n*(canvas.width-80)/Math.max(1,values.length-1),y=canvas.height-30-(v/max)*(canvas.height-60);if(n===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});
 ctx.stroke();ctx.fillStyle='#aab8d0';ctx.font='14px system-ui';ctx.fillText('Mean resources gathered per organism',40,20);
 ctx.strokeStyle='#445574';ctx.beginPath();ctx.moveTo(40,canvas.height-30);ctx.lineTo(canvas.width-40,canvas.height-30);ctx.stroke();
+
+const tree=document.getElementById('lineage-tree');tree.replaceChildren();
+const records=(data.lineage||[]).filter(x=>x.generation_born<=r.generation).slice(-250);
+const byGeneration=new Map();
+for(const item of records){const key=item.generation_born;if(!byGeneration.has(key))byGeneration.set(key,[]);byGeneration.get(key).push(item)}
+const positions=new Map(),height=Math.max(180,(r.generation+1)*68);
+tree.setAttribute('viewBox',`0 0 1000 ${height}`);
+for(const [generation,items] of byGeneration){items.forEach((item,index)=>positions.set(item.organism_id,{x:(index+1)*1000/(items.length+1),y:34+generation*64}))}
+const ns='http://www.w3.org/2000/svg';
+for(const item of records){const child=positions.get(item.organism_id);for(const parentId of (item.parent_ids||[])){const parent=positions.get(parentId);if(!parent)continue;
+const edge=document.createElementNS(ns,'line');edge.setAttribute('x1',parent.x);edge.setAttribute('y1',parent.y);edge.setAttribute('x2',child.x);edge.setAttribute('y2',child.y);edge.setAttribute('stroke','#526684');edge.setAttribute('stroke-width','1.5');tree.append(edge)}}
+for(const item of records){const point=positions.get(item.organism_id);const node=document.createElementNS(ns,'circle');node.setAttribute('cx',point.x);node.setAttribute('cy',point.y);node.setAttribute('r','6');node.setAttribute('fill',`hsl(${(item.species_id*67)%360} 65% 65%)`);
+const tip=document.createElementNS(ns,'title');tip.textContent=`Organism ${item.organism_id} · species ${item.species_id} · generation ${item.generation_born}`;node.append(tip);tree.append(node)}
 }
 slider.addEventListener('input',draw);filter.addEventListener('change',draw);draw();
 </script></body></html>"""
