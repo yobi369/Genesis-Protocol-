@@ -10,7 +10,7 @@ from .ecology import (
 from .engine import EvolutionConfig, EvolutionEngine, EvolutionResult
 from .genome import Genome, Instruction, Op
 from .models import Organism
-from .program import Program, Action, IfEnergyBelow, IfResourcesBelow, RepeatAction
+from .program import Action, IfEnergyBelow, IfResourcesBelow, Program, RepeatAction
 
 __all__ = [
     "EcologyConfig",
