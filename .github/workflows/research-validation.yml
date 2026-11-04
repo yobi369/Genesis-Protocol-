@@ -57,6 +57,11 @@ jobs:
               print(name, "schema:", data.get("schema", "matched-gp-landscapes"))
           advanced = json.loads(Path("artifacts/advanced-research-validation.json").read_text())
           print("Predator holdout changes:", advanced["predator_reproduction"]["holdout_change_vs_baseline"])
+          bonanza = advanced["bonanza_prey_only_validation"]
+          if "file_sha256" in bonanza:
+              print("Bonanza raw source SHA-256:", bonanza["file_sha256"])
+              print("Bonanza site count:", bonanza["benchmark"]["site_count"])
+              print("Bonanza prey-only holdout scores:", bonanza["benchmark"]["mean_site_holdout_log_rmse"])
           print("Tree operator seed count:", len(advanced["richer_tree_operators"]["replicates"]))
           gp = json.loads(Path("artifacts/matched-gp-landscapes.json").read_text())
           for landscape, result in gp["results"].items():
