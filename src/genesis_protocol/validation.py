@@ -393,6 +393,20 @@ def _random_gp_node(rng: random.Random) -> Primitive | EnergyGuard | RepeatNode:
     return RepeatNode(rng.randint(2, 5), action)
 
 
+def _random_linear_program(rng: random.Random) -> Program:
+    nodes = []
+    for _ in range(rng.randint(3, 10)):
+        action = Action(rng.choice((Op.MOVE, Op.GATHER, Op.REST, Op.COOPERATE)), rng.randint(1, 5))
+        kind = rng.randrange(3)
+        if kind == 0:
+            nodes.append(action)
+        elif kind == 1:
+            nodes.append(IfEnergyBelow(rng.randint(1, 5), action))
+        else:
+            nodes.append(RepeatAction(action, rng.randint(1, 4)))
+    return Program(tuple(nodes))
+
+
 def _random_tree_program(rng: random.Random) -> SequenceNode:
     return SequenceNode(tuple(_random_gp_node(rng) for _ in range(rng.randint(3, 10))))
 
@@ -479,7 +493,7 @@ def run_tree_vs_linear_gp(seeds: Sequence[int]) -> dict[str, Any]:
     population_size, generations = 36, 20
     for seed in seeds:
         init_rng = random.Random(seed)
-        paired_initial = [Program.random(init_rng, min_nodes=3, max_nodes=10) for _ in range(population_size)]
+        paired_initial = [_random_linear_program(init_rng) for _ in range(population_size)]
         linear_population = paired_initial[:]
         tree_population = [_program_to_tree(program) for program in paired_initial]
         linear_rng, tree_rng = random.Random(seed ^ 0x1A2B), random.Random(seed ^ 0x3C4D)
@@ -498,7 +512,7 @@ def run_tree_vs_linear_gp(seeds: Sequence[int]) -> dict[str, Any]:
             while len(next_linear) < population_size:
                 a = _tournament(linear_population, linear_scores, linear_rng)
                 b = _tournament(linear_population, linear_scores, linear_rng)
-                child = linear_population[linear_population.index(a)].crossover(b, linear_rng)
+                child = a.crossover(b, linear_rng)
                 next_linear.append(child.mutate(linear_rng, 0.18))
                 ta = _tournament(tree_population, tree_scores, tree_rng)
                 tb = _tournament(tree_population, tree_scores, tree_rng)
