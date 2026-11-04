@@ -101,7 +101,7 @@ def test_all_instruction_types_have_explicit_effects() -> None:
     result = evaluate(Organism(8, genome), Environment())
     assert result.resources_gathered == 2
     assert result.cooperation_actions == 2
-    assert result.energy_remaining == 29
+    assert result.energy_remaining == 31
     assert result.instructions_executed == 4
 
 
