@@ -12,9 +12,9 @@ import math
 import random
 import statistics
 import time
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
-from collections.abc import Sequence
 
 from .ecology import EcologyConfig, EcosystemEngine, EnvironmentalPhase, SpeciesDefinition
 from .evaluator import evaluate
