@@ -8,9 +8,10 @@ from __future__ import annotations
 
 import csv
 import math
+from collections.abc import Callable, Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Callable, Sequence
+from itertools import pairwise
 
 
 @dataclass(frozen=True, slots=True)
@@ -78,7 +79,7 @@ def _integrate(
 def simulate_lotka_volterra(
     initial_prey: float,
     initial_predators: float,
-    parameters: LotkaVolterraParameters = LotkaVolterraParameters(),
+    parameters: LotkaVolterraParameters | None = None,
     *,
     steps: int = 50,
     dt: float = 1.0,
@@ -87,7 +88,7 @@ def simulate_lotka_volterra(
     """Classical two-species Lotka–Volterra model solved with RK4."""
     if min(initial_prey, initial_predators) <= 0:
         raise ValueError("initial populations must be positive")
-    p = parameters
+    p = parameters or LotkaVolterraParameters()
 
     def derivative(prey: float, predators: float) -> tuple[float, float]:
         return (
@@ -101,7 +102,7 @@ def simulate_lotka_volterra(
 def simulate_rosenzweig_macarthur(
     initial_prey: float,
     initial_predators: float,
-    parameters: RosenzweigMacArthurParameters = RosenzweigMacArthurParameters(),
+    parameters: RosenzweigMacArthurParameters | None = None,
     *,
     steps: int = 50,
     dt: float = 1.0,
@@ -110,7 +111,7 @@ def simulate_rosenzweig_macarthur(
     """Logistic prey growth with a Holling-II functional response."""
     if min(initial_prey, initial_predators) <= 0:
         raise ValueError("initial populations must be positive")
-    p = parameters
+    p = parameters or RosenzweigMacArthurParameters()
 
     def derivative(prey: float, predators: float) -> tuple[float, float]:
         intake = p.attack_rate * prey / (1 + p.attack_rate * p.handling_time * prey)
@@ -139,7 +140,7 @@ def load_hudson_bay_csv(path: str | Path) -> tuple[PopulationPoint, ...]:
             if min(lynx, hare) <= 0:
                 raise ValueError("population-index observations must be positive")
             rows.append(PopulationPoint(year, hare, lynx))
-    if len(rows) < 10 or any(b.time <= a.time for a, b in zip(rows, rows[1:])):
+    if len(rows) < 10 or any(b.time <= a.time for a, b in pairwise(rows)):
         raise ValueError("empirical series must have at least 10 increasing observations")
     return tuple(rows)
 
