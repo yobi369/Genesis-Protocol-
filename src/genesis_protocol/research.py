@@ -6,9 +6,11 @@ biological realism. They do not call EcosystemEngine or its evaluator.
 from __future__ import annotations
 
 import random
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
-from typing import Iterable, Sequence
+from itertools import pairwise
 
+from .ecology import LineageRecord
 from .genome import Genome
 
 
@@ -115,8 +117,8 @@ class SpatialResult:
 class SpatialEcosystem:
     """Toroidal grid with renewable cells and persistent weighted social ties."""
 
-    def __init__(self, config: SpatialConfig = SpatialConfig(), *, seed: int = 1) -> None:
-        self.config = config
+    def __init__(self, config: SpatialConfig | None = None, *, seed: int = 1) -> None:
+        self.config = config or SpatialConfig()
         self.seed = seed
         self.rng = random.Random(seed)
         self.resources = [[2 for _ in range(config.width)] for _ in range(config.height)]
@@ -227,17 +229,17 @@ def cluster_genomes(genomes: Sequence[Genome], threshold: float) -> tuple[Specie
                  for i, members in enumerate(clusters))
 
 
-def validate_lineage(records: Iterable[object]) -> dict[str, int | bool]:
+def validate_lineage(records: Iterable[LineageRecord]) -> dict[str, int | bool]:
     """Check parent existence, birth ordering and acyclicity for LineageRecord-like rows."""
     rows = list(records)
-    by_id = {getattr(row, "organism_id"): row for row in rows}
+    by_id = {row.organism_id: row for row in rows}
     missing = 0
     temporal = 0
     for row in rows:
-        for parent in getattr(row, "parent_ids"):
+        for parent in row.parent_ids:
             if parent not in by_id:
                 missing += 1
-            elif getattr(by_id[parent], "generation_born") >= getattr(row, "generation_born"):
+            elif by_id[parent].generation_born >= row.generation_born:
                 temporal += 1
     return {"records": len(rows), "missing_parents": missing,
             "temporal_violations": temporal,
@@ -263,11 +265,11 @@ def hypervolume_3d(points: Sequence[Sequence[float]],
              and i in pareto_front_indices(points)]
     xs = sorted({reference[0], *(p[0] for p in front)})
     volume = 0.0
-    for x0, x1 in zip(xs, xs[1:]):
+    for x0, x1 in pairwise(xs):
         active = [(p[1], p[2]) for p in front if p[0] >= x1]
         ys = sorted({reference[1], *(p[0] for p in active)})
         area = 0.0
-        for y0, y1 in zip(ys, ys[1:]):
+        for y0, y1 in pairwise(ys):
             zmax = max((z for y, z in active if y >= y1), default=reference[2])
             area += (y1 - y0) * max(0.0, zmax - reference[2])
         volume += (x1 - x0) * area
