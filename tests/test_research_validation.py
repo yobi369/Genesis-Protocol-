@@ -1,6 +1,7 @@
 import math
-import pytest
 from pathlib import Path
+
+import pytest
 
 from genesis_protocol.evaluator import evaluate
 from genesis_protocol.genome import Op
