@@ -62,3 +62,21 @@ def test_matched_gp_runs_four_landscapes_with_paired_replicates():
         "foraging", "energy_conservation", "cooperation", "balanced"
     }
     assert all(row["replicates"] == 30 for row in result["results"].values())
+
+
+def test_predator_reproduction_campaign_reports_species_specific_holdout():
+    from pathlib import Path
+    from genesis_protocol.advanced_research import run_predator_reproduction_experiment
+    from genesis_protocol.reference_ecology import load_hudson_bay_csv
+
+    root = Path(__file__).resolve().parents[1]
+    observations = load_hudson_bay_csv(
+        root / "data/empirical/hudson_bay_lynx_hare_1900_1920.csv"
+    )
+    result = run_predator_reproduction_experiment(observations, tuple(range(30)))
+    assert result["split"]["train_count"] == 14
+    assert result["split"]["holdout_count"] == 7
+    assert set(result["holdout_change_vs_baseline"]) == {
+        "prey_log_rmse", "predator_log_rmse"
+    }
+    assert len(result["selected_replicates"]) == 30
