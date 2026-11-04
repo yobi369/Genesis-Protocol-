@@ -26,7 +26,7 @@ class Instruction:
 
     def __post_init__(self) -> None:
         if not isinstance(self.op, Op):
-            raise ValueError("instruction opcode must be an Op value")
+            raise TypeError("instruction opcode must be an Op value")
         if not 1 <= self.amount <= 5:
             raise ValueError("instruction amount must be between 1 and 5")
 
