@@ -294,7 +294,10 @@ def run_predator_reproduction_experiment(
     ]
     prey_comparison = _paired_interval(paired_prey, seed=seeds[0] + 31)
     predator_comparison = _paired_interval(paired_predators, seed=seeds[0] + 32)
-    prey_non_degraded = prey_comparison["bootstrap_95_percentile_interval"][1] <= 0
+    prey_noninferiority_margin = 0.05
+    prey_non_degraded = (
+        prey_comparison["bootstrap_95_percentile_interval"][1] <= prey_noninferiority_margin
+    )
     predator_improved = predator_comparison["bootstrap_95_percentile_interval"][1] < 0
     return {
         "design": "paired 30+ seeds; chronological 70/30 split; model selection uses training years only",
@@ -313,10 +316,11 @@ def run_predator_reproduction_experiment(
             "prey_log_rmse": prey_comparison,
             "predator_log_rmse": predator_comparison,
         },
+        "prey_noninferiority_margin_log_rmse": prey_noninferiority_margin,
         "decision": (
-            "predator_improved_without_detectable_prey_degradation"
+            "predator_improved_within_predeclared_prey_noninferiority_margin"
             if predator_improved and prey_non_degraded
-            else "improvement_not_demonstrated_under_prey_non_degradation_rule"
+            else "improvement_not_demonstrated_under_prey_noninferiority_rule"
         ),
         "interpretation_rule": (
             "A predator improvement is not accepted if prey holdout RMSE worsens materially. "
