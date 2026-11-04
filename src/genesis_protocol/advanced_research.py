@@ -19,6 +19,10 @@ from .empirical_datasets import (
     load_bonanza_hare_pellets_csv,
     run_bonanza_prey_only_benchmark,
 )
+from .empirical_datasets import (
+    load_bonanza_hare_pellets_csv,
+    run_bonanza_prey_only_benchmark,
+)
 from .genome import Op
 from .reference_ecology import PopulationPoint, load_hudson_bay_csv
 from .research import SpatialConfig, SpatialEcosystem
@@ -433,11 +437,24 @@ def run_advanced_campaign(
     observations = load_hudson_bay_csv(
         root / "data" / "empirical" / "hudson_bay_lynx_hare_1900_1920.csv"
     )
+    empirical_bonanza = None
+    if bonanza_csv is not None:
+        bonanza_rows = load_bonanza_hare_pellets_csv(bonanza_csv)
+        empirical_bonanza = {
+            "source": "Bonanza Creek LTER BNZ:69",
+            "doi": "10.6073/pasta/5abe35f63e610b57068e9029961f4dee",
+            "raw_record_count": sum(row.tray_count for row in bonanza_rows),
+            "site_year_observation_count": len(bonanza_rows),
+            "benchmark": run_bonanza_prey_only_benchmark(bonanza_rows),
+        }
     result = {
-        "schema": "genesis-advanced-research-v1",
+        "schema": "genesis-advanced-research-v2",
         "seed_policy": {"count": seed_count, "seeds": list(seeds)},
         "predator_reproduction": run_predator_reproduction_experiment(observations, seeds),
         "richer_tree_operators": run_richer_tree_operator_smoke(seeds),
+        "independent_empirical_benchmarks": {
+            "bonanza_creek_bnz_69": empirical_bonanza,
+        },
         "empirical_dataset_registry": {
             "status": (
                 "Bonanza site-year importer and prey-only holdout benchmark implemented; "
@@ -503,6 +520,9 @@ def main() -> None:
         "predator_reproduction": result["predator_reproduction"]["selected_reproductive_model"],
         "tree_operator_trials_per_seed": result["richer_tree_operators"]["operator_trials_per_seed"],
         "empirical_registry_status": result["empirical_dataset_registry"]["status"],
+        "bonanza_benchmark_included": (
+            result["independent_empirical_benchmarks"]["bonanza_creek_bnz_69"] is not None
+        ),
     }, indent=2))
 
 
