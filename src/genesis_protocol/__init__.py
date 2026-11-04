@@ -13,23 +13,23 @@ from .models import Organism
 from .program import Action, IfEnergyBelow, IfResourcesBelow, Program, RepeatAction
 
 __all__ = [
+    "Action",
     "EcologyConfig",
     "EcosystemEngine",
     "EcosystemResult",
     "EnvironmentalPhase",
-    "SpeciesDefinition",
     "EvolutionConfig",
     "EvolutionEngine",
     "EvolutionResult",
     "Genome",
+    "IfEnergyBelow",
+    "IfResourcesBelow",
     "Instruction",
     "Op",
     "Organism",
     "Program",
-    "Action",
-    "IfEnergyBelow",
-    "IfResourcesBelow",
     "RepeatAction",
+    "SpeciesDefinition",
 ]
 
 __version__ = "0.2.0"
