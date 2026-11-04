@@ -145,3 +145,19 @@ def test_distribution_free_statistics_are_reproducible():
         bootstrap_mean_interval((1.0, 2.0), replicates=10)
     with pytest.raises(ValueError):
         paired_effect_summary((1.0,))
+
+
+
+def test_nsga2_reference_ranking_crowding_and_selection():
+    points = ((1, 1, 1), (2, 0, 0), (0, 2, 0), (0, 0, 2), (0, 0, 0))
+    ranks = nsga2_ranks(points)
+    assert ranks == (0, 0, 0, 0, 1)
+    distances = nsga2_crowding(points, ranks)
+    assert all(distances[index] == float("inf") for index in range(4))
+    selected = nsga2_select(points, 3)
+    assert len(selected) == 3
+    assert all(index != 4 for index in selected)
+    with pytest.raises(ValueError):
+        nsga2_select(points, -1)
+    with pytest.raises(ValueError):
+        nsga2_crowding(points, (0,))
