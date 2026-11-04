@@ -1,9 +1,10 @@
 import json
+import os
 from pathlib import Path
 
 import pytest
 
-playwright = pytest.importorskip("playwright.sync_api")
+pytestmark = pytest.mark.skipif(os.getenv("GENESIS_BROWSER_TESTS") != "1", reason="browser suite runs in dedicated CI job")\n\nplaywright = pytest.importorskip("playwright.sync_api")
 from playwright.sync_api import sync_playwright
 
 
