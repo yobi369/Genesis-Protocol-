@@ -29,7 +29,7 @@ jobs:
         run: pytest -q tests/test_research_validation.py
       - name: Run 30-seed validation campaign
         run: genesis-research-validation --seeds 30 --output artifacts/research-validation.json
-      - name: Publish campaign summary
+      - name: Test advanced ecological and GP experiments\n        run: pytest -q tests/test_advanced_research.py\n      - name: Run advanced predator and tree-GP campaign\n        run: genesis-advanced-research --seeds 30 --output artifacts/advanced-research-validation.json\n      - name: Run matched multi-landscape GP campaign\n        run: genesis-gp-landscapes --seeds 30 --output artifacts/matched-gp-landscapes.json\n      - name: Publish campaign summary
         run: |
           python - <<'PY'
           import json
@@ -64,7 +64,7 @@ jobs:
           name: genesis-research-validation-30-seeds
           path: artifacts/research-validation.json
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 30\n      - uses: actions/upload-artifact@v4\n        with:\n          name: genesis-advanced-research-30-seeds\n          path: |\n            artifacts/advanced-research-validation.json\n            artifacts/matched-gp-landscapes.json\n          if-no-files-found: error\n          retention-days: 30
 
   browser-usability:
     name: Browser workbench usability and scale
