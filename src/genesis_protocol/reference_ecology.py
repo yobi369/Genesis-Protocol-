@@ -156,6 +156,22 @@ def _log_rmse(predicted: Sequence[PopulationPoint], observed: Sequence[Populatio
     return math.sqrt(sum(value * value for value in errors) / len(errors))
 
 
+def _log_rmse_species(
+    predicted: Sequence[PopulationPoint],
+    observed: Sequence[PopulationPoint],
+    start: int,
+    stop: int,
+    species: str,
+) -> float:
+    if species not in {"prey", "predators"}:
+        raise ValueError("species must be prey or predators")
+    errors = [
+        math.log1p(getattr(prediction, species)) - math.log1p(getattr(actual, species))
+        for prediction, actual in zip(predicted[start:stop], observed[start:stop])
+    ]
+    return math.sqrt(sum(value * value for value in errors) / len(errors))
+
+
 def calibrate_empirical_references(
     observations: Sequence[PopulationPoint],
     *,
@@ -212,7 +228,17 @@ def calibrate_empirical_references(
         results[name] = {
             "parameters": asdict(params),
             "training_log_rmse": train_score,
+            "training_log_rmse_prey": _log_rmse_species(trajectory, observations, 0, split, "prey"),
+            "training_log_rmse_predators": _log_rmse_species(
+                trajectory, observations, 0, split, "predators"
+            ),
             "holdout_log_rmse": _log_rmse(trajectory, observations, split, len(observations)),
+            "holdout_log_rmse_prey": _log_rmse_species(
+                trajectory, observations, split, len(observations), "prey"
+            ),
+            "holdout_log_rmse_predators": _log_rmse_species(
+                trajectory, observations, split, len(observations), "predators"
+            ),
             "trajectory": [asdict(point) for point in trajectory],
             "grid_candidates": len(candidates),
             "holdout_start_year": observations[split].time,
