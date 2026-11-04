@@ -17,7 +17,7 @@ textarea{width:100%;min-height:70px;box-sizing:border-box}svg{width:100%;backgro
 <body>
 <header><h1>Genesis Protocol</h1><p class="muted">Local-first evolutionary experiment manager · JSON import/export · no account or network required</p>
 <div class="toolbar"><label>Import experiment JSON <input id="files" type="file" accept=".json,application/json" multiple></label>
-<button id="export">Export manifest</button><span id="status" class="muted">No experiments loaded</span></div></header>
+<button id="export">Export manifest</button><span id="status" class="muted" role="status" aria-live="polite">No experiments loaded</span></div></header>
 <section class="panel"><div class="toolbar"><label>Experiment <select id="run"></select></label>
 <label>Generation <input id="generation" type="range" min="0" max="0" value="0"></label><span id="generation-label">—</span></div>
 <div class="cards"><div class="panel">Population<div class="metric" id="population">—</div></div>
@@ -28,7 +28,7 @@ textarea{width:100%;min-height:70px;box-sizing:border-box}svg{width:100%;backgro
 <section class="panel"><h2>Run comparison</h2><div class="toolbar"><label>Baseline <select id="base"></select></label><label>Candidate <select id="candidate"></select></label><button id="compare">Compare summaries</button></div><pre id="comparison" class="muted">Load at least two runs to compare.</pre></section>
 <section class="panel"><h2>Species and lineage</h2><table><thead><tr><th>Species</th><th>Population</th></tr></thead><tbody id="species"></tbody></table>
 <svg id="lineage" viewBox="0 0 1000 220" role="img" aria-label="Lineage relationships"></svg></section>
-<section class="panel"><h2>Research notes</h2><textarea id="notes" placeholder="Record hypotheses, deviations, exclusions, and interpretation. Notes are local to this browser session."></textarea></section>
+<section class="panel"><h2>Research notes</h2><label for="notes">Hypotheses, deviations, exclusions and interpretation</label><textarea id="notes" placeholder="Notes are local to this browser session."></textarea></section>
 <script>
 'use strict';
 const runs=[];const el=id=>document.getElementById(id);
