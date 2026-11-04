@@ -11,7 +11,6 @@ from statistics import mean
 from typing import Any
 
 from .genome import Genome, Op
-from .models import Environment
 
 
 @dataclass(frozen=True, slots=True)
@@ -276,7 +275,6 @@ class EcosystemEngine:
         for index in range(0, len(order) - 1, 2):
             partner_map[order[index].organism_id] = order[index + 1].organism_id
             partner_map[order[index + 1].organism_id] = order[index].organism_id
-        by_id = {item.organism_id: item for item in population}
         outcomes: list[OrganismOutcome] = []
         raw_results: list[tuple[EcologicalOrganism, int, int, int]] = []
         for organism in order:
@@ -372,9 +370,9 @@ class EcosystemEngine:
             for item in population
         ]
         reports: list[GenerationReport] = []
-        previous_species = set(self.species)
-
         for generation in range(self.config.generations):
+            if not population:
+                break
             phase = self._phase(generation)
             outcomes, remaining = self._evaluate_population(population, phase)
             ranked = self._ranked(population, outcomes)
@@ -382,6 +380,8 @@ class EcosystemEngine:
             for item in population:
                 label = self.species[item.species_id].name
                 species_counts[label] = species_counts.get(label, 0) + 1
+            surviving_species = {item.species_id for item in outcomes if item.survived}
+            extinct_this_generation = len({item.species_id for item in population} - surviving_species)
             reports.append(GenerationReport(
                 generation, phase.resource_supply, remaining, species_counts,
                 mean(item.fitness.resources for item in outcomes),
@@ -390,9 +390,8 @@ class EcosystemEngine:
                 sum(item[2] == 0 for item in ranked),
                 len({item.genome for item in population}),
                 self.speciation_count,
-                len(previous_species - {item.species_id for item in population}),
+                extinct_this_generation,
             ))
-            previous_species = {item.species_id for item in population}
             if generation == self.config.generations - 1:
                 break
 
