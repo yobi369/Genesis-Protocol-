@@ -24,7 +24,7 @@ with open("run.json", encoding="utf-8") as handle:
 render_lab(experiment, "genesis-lab.html")
 ```
 
-Open the generated HTML file locally. The viewer includes generation navigation, headline metrics, a resource trajectory and species population filtering. It does not upload data or require an external service.
+Open the generated HTML file locally. The viewer includes generation navigation, headline metrics, a resource trajectory, species population filtering and an SVG parent-offspring lineage tree. It does not upload data or require an external service.
 
 ## Recommended experimental protocol
 
