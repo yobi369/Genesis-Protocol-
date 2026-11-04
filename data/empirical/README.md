@@ -7,12 +7,16 @@ silently converted into abundance counts.
 
 | Dataset | Coverage | Sampling method / observation | Role and caveat |
 |---|---|---|---|
+| Bonanza Creek LTER, Alaska (BNZ:69) | 1985–2025 (current release; 5,964 tray rows) | Hare pellet counts in 1 m² litter trays; six trays within each of 24 permanent control plots, spring-to-spring litter years | Independent hare-only series with site/tray replication; pellets are an index, not direct density. Use the checked-in BNZ parser and preserve site-year strata. |
 | Tetlin National Wildlife Refuge, Alaska | 1990–2024 | Snowshoe hare pellet counts across quadrats and sites | Hare-only series; raw CSV and ServCat processing record are linked in Data.gov metadata. Not paired predator abundance. |
 | Kluane hare grids, Yukon | Multi-decade monitoring; Dryad release includes monitoring, live-trap and experimental records | Live trapping / capture-mark-recapture, experimental grids and small-mammal monitoring | Valuable independent hare demographic and experimental evidence; inspect individual workbook metadata and use a clearly specified subset. |
 | Wood Buffalo National Park, Canada | 2006–2017 | Annual June fecal-pellet counts on four permanent transects; plots cleared after counting | Hare-only transect series; methodology and data dictionary are published separately. |
 | Yukon boreal community monitoring | 1973–2022 | Annual permanent hare pellet plots; predator snow-track counts on fixed routes after fresh snowfall; site-specific protocols | Potential paired multi-species pattern series, but predator tracks are an index and survey effort/weather/site differences must be retained. |
 
 ## Source links
+
+- Bonanza Creek LTER dataset BNZ:69, DOI 10.6073/pasta/5abe35f63e610b57068e9029961f4dee (CSV, metadata and methods):
+  https://www.lter.uaf.edu/data/data-detail/id/69
 
 - Tetlin FWS / Data.gov metadata:
   https://catalog.data.gov/dataset/snowshoe-hare-population-monitoring-at-tetlin-national-wildlife-refuge-raw-datas-1990-2024
@@ -44,9 +48,7 @@ hare and predator survey effort. Kluane individual-level capture histories
 require a dedicated observation model; do not reduce them to arbitrary annual
 counts.
 
-At this milestone, the dataset registry is metadata/provenance work. The raw
-files have not yet been downloaded, checksum-verified, harmonized or used to
-fit the model. No results are claimed from these additional sources.
+At this milestone, the registry and BNZ site-year CSV importer are implemented, but the BNZ raw file has not yet been downloaded, checksum-verified or run through the model. The other registered raw files also remain un-ingested. No model-fit results are claimed from these additional sources.
 
 ---
 
