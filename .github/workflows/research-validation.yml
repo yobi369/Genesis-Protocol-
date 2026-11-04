@@ -49,7 +49,8 @@ jobs:
           print("Tree operator seed count:", len(advanced["richer_tree_operators"]["replicates"]))
           gp = json.loads(Path("artifacts/matched-gp-landscapes.json").read_text())
           for landscape, result in gp["results"].items():
-              print(landscape, "paired tree-minus-linear:", result["paired_tree_minus_linear_mean"])
+              print(landscape, "paired tree-minus-linear:", result["paired"]["mean_tree_minus_linear"],
+                    "95% interval:", result["paired"]["bootstrap_95_percentile_interval"])
           PY
       - uses: actions/upload-artifact@v4
         with:
