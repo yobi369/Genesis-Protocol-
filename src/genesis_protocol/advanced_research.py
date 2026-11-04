@@ -161,6 +161,26 @@ def _species_log_rmse(predicted: Sequence[float], observed: Sequence[float],
     return math.sqrt(statistics.mean(error * error for error in errors))
 
 
+def _paired_interval(differences: Sequence[float], *, seed: int) -> dict[str, Any]:
+    if len(differences) < 2:
+        raise ValueError("paired uncertainty requires at least two replicates")
+    rng = random.Random(seed)
+    means = [
+        statistics.mean(rng.choices(differences, k=len(differences)))
+        for _ in range(3000)
+    ]
+    ordered = sorted(means)
+    return {
+        "n": len(differences),
+        "mean_difference": statistics.mean(differences),
+        "standard_deviation": statistics.stdev(differences),
+        "bootstrap_95_percentile_interval": [
+            ordered[int(0.025 * (len(ordered) - 1))],
+            ordered[int(0.975 * (len(ordered) - 1))],
+        ],
+    }
+
+
 def run_predator_reproduction_experiment(
     observations: Sequence[PopulationPoint], seeds: Sequence[int],
 ) -> dict[str, Any]:
@@ -189,6 +209,12 @@ def run_predator_reproduction_experiment(
                           for t in range(len(observations))]
     baseline_mean_pred = [statistics.mean(row[t] for row in baseline_predators)
                           for t in range(len(observations))]
+    baseline_seed_errors = [{
+        "seed": seed,
+        "holdout_prey_log_rmse": _species_log_rmse(prey, observed_prey, split, len(observations)),
+        "holdout_predator_log_rmse": _species_log_rmse(
+            predators, observed_predators, split, len(observations)),
+    } for seed, prey, predators in zip(seeds, baseline_prey, baseline_predators)]
     baseline = {
         "model": "no_predator_reproduction",
         "train_prey_log_rmse": _species_log_rmse(baseline_mean_prey, observed_prey, 0, split),
@@ -223,6 +249,10 @@ def run_predator_reproduction_experiment(
                         "final_predators": predator_series[-1],
                         "total_predator_births": sum(p.predator_births for p in trajectory),
                         "total_predation_events": sum(p.predation_events for p in trajectory),
+                        "holdout_prey_log_rmse": _species_log_rmse(
+                            prey_series, observed_prey, split, len(observations)),
+                        "holdout_predator_log_rmse": _species_log_rmse(
+                            predator_series, observed_predators, split, len(observations)),
                     })
                 mean_prey = [statistics.mean(row[t] for row in prey_runs)
                              for t in range(len(observations))]
@@ -244,6 +274,16 @@ def run_predator_reproduction_experiment(
                     "replicates": replicate_rows,
                 })
     best = min(candidates, key=lambda row: row["train_joint_log_rmse"])
+    baseline_by_seed = {row["seed"]: row for row in baseline_seed_errors}
+    paired_prey = [
+        row["holdout_prey_log_rmse"] - baseline_by_seed[row["seed"]]["holdout_prey_log_rmse"]
+        for row in best["replicates"]
+    ]
+    paired_predators = [
+        row["holdout_predator_log_rmse"]
+        - baseline_by_seed[row["seed"]]["holdout_predator_log_rmse"]
+        for row in best["replicates"]
+    ]
     return {
         "design": "paired 30+ seeds; chronological 70/30 split; model selection uses training years only",
         "split": {"train_count": split, "holdout_count": len(observations) - split,
@@ -257,10 +297,8 @@ def run_predator_reproduction_experiment(
                             if key not in ("replicates", "mean_trajectory")}
                            for row in candidates],
         "holdout_change_vs_baseline": {
-            "prey_log_rmse": best["holdout_prey_log_rmse"] - baseline["holdout_prey_log_rmse"],
-            "predator_log_rmse": (
-                best["holdout_predator_log_rmse"] - baseline["holdout_predator_log_rmse"]
-            ),
+            "prey_log_rmse": _paired_interval(paired_prey, seed=seeds[0] + 31),
+            "predator_log_rmse": _paired_interval(paired_predators, seed=seeds[0] + 32),
         },
         "interpretation_rule": (
             "A predator improvement is not accepted if prey holdout RMSE worsens materially. "
