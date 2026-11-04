@@ -292,21 +292,45 @@ class EcosystemEngine:
             gathered = 0
             attempts = 0
             executed = 0
-            for instruction in organism.genome.instructions:
-                if executed >= self.config.instruction_budget:
-                    break
+            instructions = organism.genome.instructions
+            pc = 0
+            previous_action: tuple[Op, int] | None = None
+
+            def apply_action(op: Op, amount: int) -> None:
+                nonlocal energy, gathered, remaining, attempts
+                if op is Op.MOVE:
+                    energy = max(0, energy - phase.movement_cost * amount)
+                elif op is Op.GATHER:
+                    taken = min(amount, remaining)
+                    remaining -= taken
+                    gathered += taken
+                    energy += taken * phase.gather_reward
+                elif op is Op.REST:
+                    energy += amount
+                elif op is Op.COOPERATE:
+                    attempts += amount
+
+            while pc < len(instructions) and executed < self.config.instruction_budget:
+                instruction = instructions[pc]
                 executed += 1
-                if instruction.op is Op.MOVE:
-                    energy = max(0, energy - phase.movement_cost * instruction.amount)
-                elif instruction.op is Op.GATHER:
-                    amount = min(instruction.amount, remaining)
-                    remaining -= amount
-                    gathered += amount
-                    energy += amount * phase.gather_reward
-                elif instruction.op is Op.REST:
-                    energy += instruction.amount
-                elif instruction.op is Op.COOPERATE:
-                    attempts += instruction.amount
+                if instruction.op is Op.IF_ENERGY_BELOW:
+                    pc += 1 if energy < instruction.amount else 2
+                    continue
+                if instruction.op is Op.IF_RESOURCES_BELOW:
+                    pc += 1 if remaining < instruction.amount else 2
+                    continue
+                if instruction.op is Op.REPEAT_PREVIOUS:
+                    if previous_action is not None:
+                        for _ in range(instruction.amount):
+                            if executed >= self.config.instruction_budget:
+                                break
+                            apply_action(*previous_action)
+                            executed += 1
+                    pc += 1
+                    continue
+                apply_action(instruction.op, instruction.amount)
+                previous_action = (instruction.op, instruction.amount)
+                pc += 1
             reciprocal = min(attempts, 5) if organism.organism_id in reciprocal_ids else 0
             if attempts and reciprocal == 0:
                 energy = max(0, energy - phase.unreciprocated_cost * attempts)
