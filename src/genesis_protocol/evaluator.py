@@ -1,4 +1,4 @@
-"""Deterministic bounded interpreter for organism policies."""
+"""Deterministic bounded interpreter for linear and conditional genomes."""
 
 from __future__ import annotations
 
@@ -20,23 +20,47 @@ def evaluate(
     gathered = 0
     cooperation = 0
     executed = 0
+    pc = 0
 
-    for instruction in organism.genome.instructions[:instruction_budget]:
-        executed += 1
-        if instruction.op is Op.MOVE:
-            energy = max(0, energy - environment.movement_cost * instruction.amount)
-        elif instruction.op is Op.GATHER:
-            possible = min(instruction.amount, environment.resource_supply - gathered)
-            possible = max(0, possible)
+    def apply(op: Op, amount: int) -> None:
+        nonlocal energy, gathered, cooperation
+        if op is Op.MOVE:
+            energy = max(0, energy - environment.movement_cost * amount)
+        elif op is Op.GATHER:
+            possible = max(0, min(amount, environment.resource_supply - gathered))
             gathered += possible
             energy += possible * environment.gather_reward
-        elif instruction.op is Op.REST:
-            energy += instruction.amount
-        elif instruction.op is Op.COOPERATE:
-            cooperation += instruction.amount
-            energy += environment.cooperation_bonus * instruction.amount
+        elif op is Op.REST:
+            energy += amount
+        elif op is Op.COOPERATE:
+            cooperation += amount
+            energy += environment.cooperation_bonus * amount
 
-    # Explicit task fitness: acquired resources plus a bounded cooperation reward.
+    instructions = organism.genome.instructions
+    previous_action: tuple[Op, int] | None = None
+    while pc < len(instructions) and executed < instruction_budget:
+        instruction = instructions[pc]
+        executed += 1
+        if instruction.op is Op.IF_ENERGY_BELOW:
+            pc += 1 if energy < instruction.amount else 2
+            continue
+        if instruction.op is Op.IF_RESOURCES_BELOW:
+            remaining = max(0, environment.resource_supply - gathered)
+            pc += 1 if remaining < instruction.amount else 2
+            continue
+        if instruction.op is Op.REPEAT_PREVIOUS:
+            if previous_action is not None:
+                for _ in range(instruction.amount):
+                    if executed >= instruction_budget:
+                        break
+                    apply(*previous_action)
+                    executed += 1
+            pc += 1
+            continue
+        apply(instruction.op, instruction.amount)
+        previous_action = (instruction.op, instruction.amount)
+        pc += 1
+
     fitness = float(gathered + min(cooperation, 10) * 0.25 + energy * 0.05)
     return Evaluation(
         organism_id=organism.organism_id,
