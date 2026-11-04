@@ -1,13 +1,22 @@
 """Genesis Protocol evolutionary computing laboratory."""
 
 from .ecology import (
-    EcologyConfig, EcosystemEngine, EcosystemResult, EnvironmentalPhase, SpeciesDefinition,
+    EcologyConfig,
+    EcosystemEngine,
+    EcosystemResult,
+    EnvironmentalPhase,
+    SpeciesDefinition,
 )
 from .engine import EvolutionConfig, EvolutionEngine, EvolutionResult
 from .genome import Genome, Instruction, Op
 from .models import Organism
 from .program import Action, IfEnergyBelow, IfResourcesBelow, Program, RepeatAction
-from .research import SpatialConfig, SpatialEcosystem, cluster_genomes, compare_reference_policies
+from .research import (
+    SpatialConfig,
+    SpatialEcosystem,
+    cluster_genomes,
+    compare_reference_policies,
+)
 from .tree_gp import EnergyGuard, Primitive, RepeatNode, SequenceNode, evaluate_tree
 
 __all__ = [
