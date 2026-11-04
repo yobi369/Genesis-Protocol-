@@ -576,6 +576,20 @@ def _population_log_rmse(
     return math.sqrt(statistics.mean(value * value for value in errors))
 
 
+def _population_log_rmse_species(
+    predicted: Sequence[PopulationPoint],
+    observed: Sequence[PopulationPoint],
+    start: int,
+    stop: int,
+    species: str,
+) -> float:
+    errors = [
+        math.log1p(getattr(prediction, species)) - math.log1p(getattr(actual, species))
+        for prediction, actual in zip(predicted[start:stop], observed[start:stop])
+    ]
+    return math.sqrt(statistics.mean(value * value for value in errors))
+
+
 def calibrate_spatial_to_empirical(
     observations: Sequence[PopulationPoint], seeds: Sequence[int]
 ) -> dict[str, Any]:
@@ -674,7 +688,19 @@ def calibrate_spatial_to_empirical(
             )
         },
         "training_log_rmse": best["training_log_rmse"],
+        "training_log_rmse_prey": _population_log_rmse_species(
+            best["prediction"], observations, 0, split, "prey"
+        ),
+        "training_log_rmse_predators": _population_log_rmse_species(
+            best["prediction"], observations, 0, split, "predators"
+        ),
         "holdout_log_rmse": best_holdout_score,
+        "holdout_log_rmse_prey": _population_log_rmse_species(
+            best["prediction"], observations, split, len(observations), "prey"
+        ),
+        "holdout_log_rmse_predators": _population_log_rmse_species(
+            best["prediction"], observations, split, len(observations), "predators"
+        ),
         "selected_mean_trajectory": [asdict(point) for point in best["prediction"]],
         "selected_parameter_replicates": best["replicates"],
         "selected_parameter_seed_trajectories": best["replicate_trajectories"],
