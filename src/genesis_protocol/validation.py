@@ -12,9 +12,9 @@ import math
 import random
 import statistics
 import time
-from dataclasses import asdict
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
+from collections.abc import Sequence
 
 from .ecology import EcologyConfig, EcosystemEngine, EnvironmentalPhase, SpeciesDefinition
 from .evaluator import evaluate
@@ -23,7 +23,6 @@ from .models import Environment, Organism
 from .program import Action, IfEnergyBelow, Program, RepeatAction
 from .reference_ecology import (
     LotkaVolterraParameters,
-    PopulationPoint,
     RosenzweigMacArthurParameters,
     calibrate_empirical_references,
     load_hudson_bay_csv,
@@ -220,17 +219,16 @@ def _adjusted_rand(labels: Sequence[int], clusters: Sequence[int]) -> float:
     n = len(labels)
     if n < 2:
         return 1.0
-    def combinations(values: Sequence[int]) -> float:
-        counts: dict[int, int] = {}
-        for value in values:
-            counts[value] = counts.get(value, 0) + 1
-        return sum(count * (count - 1) / 2 for count in counts.values())
+    def pair_count(counts: Sequence[int]) -> float:
+        return sum(count * (count - 1) / 2 for count in counts)
     label_ids, cluster_ids = sorted(set(labels)), sorted(set(clusters))
     contingency = [[sum(a == x and b == y for a, b in zip(labels, clusters))
                     for y in cluster_ids] for x in label_ids]
-    sum_cells = sum(combinations(row) for row in contingency)
-    sum_rows = combinations(labels)
-    sum_columns = combinations(clusters)
+    row_counts = [sum(value == label for value in labels) for label in label_ids]
+    column_counts = [sum(value == cluster for value in clusters) for cluster in cluster_ids]
+    sum_cells = pair_count([value for row in contingency for value in row])
+    sum_rows = pair_count(row_counts)
+    sum_columns = pair_count(column_counts)
     total = n * (n - 1) / 2
     expected = sum_rows * sum_columns / total
     maximum = (sum_rows + sum_columns) / 2
@@ -433,7 +431,7 @@ def _tree_to_program(tree: TreeNode) -> Program:
         elif isinstance(node, RepeatNode) and isinstance(node.body, Primitive):
             nodes.append(RepeatAction(Action(node.body.op, node.body.amount), node.count - 1))
         else:
-            raise ValueError("comparison tree contains a node outside the matched grammar")
+            raise TypeError("comparison tree contains a node outside the matched grammar")
     return Program(tuple(nodes))
 
 
@@ -448,7 +446,7 @@ def _program_to_tree(program: Program) -> SequenceNode:
             children.append(RepeatNode(node.additional_repetitions + 1,
                                        Primitive(node.action.op, node.action.amount)))
         else:
-            raise ValueError("linear comparator contains an unsupported node")
+            raise TypeError("linear comparator contains an unsupported node")
     return SequenceNode(tuple(children))
 
 
