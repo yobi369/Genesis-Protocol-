@@ -44,9 +44,15 @@ jobs:
           print("Tree GP replicates:", len(result["tree_vs_linear_gp"]["replicates"]))
           empirical = result["empirical_calibration"]
           for name, model in empirical["ode_reference_calibration"]["models"].items():
-              print(name, "holdout log-RMSE:", model["holdout_log_rmse"])
+              print(name, "holdout log-RMSE:",
+                    model["holdout_log_rmse"], "prey:",
+                    model["holdout_log_rmse_prey"], "predators:",
+                    model["holdout_log_rmse_predators"])
+          spatial = empirical["spatial_model_calibration"]
           print("spatial agent model holdout log-RMSE:",
-                empirical["spatial_model_calibration"]["holdout_log_rmse"])
+                spatial["holdout_log_rmse"], "prey:",
+                spatial["holdout_log_rmse_prey"], "predators:",
+                spatial["holdout_log_rmse_predators"])
           PY
       - uses: actions/upload-artifact@v4
         with:
