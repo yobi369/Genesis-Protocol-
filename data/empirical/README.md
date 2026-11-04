@@ -11,7 +11,7 @@ silently converted into abundance counts.
 | Tetlin National Wildlife Refuge, Alaska | 1990–2024 | Snowshoe hare pellet counts across quadrats and sites | Hare-only series; raw CSV and ServCat processing record are linked in Data.gov metadata. Not paired predator abundance. |
 | Kluane hare grids, Yukon | Multi-decade monitoring; Dryad release includes monitoring, live-trap and experimental records | Live trapping / capture-mark-recapture, experimental grids and small-mammal monitoring | Valuable independent hare demographic and experimental evidence; inspect individual workbook metadata and use a clearly specified subset. |
 | Wood Buffalo National Park, Canada | 2006–2017 | Annual June fecal-pellet counts on four permanent transects; plots cleared after counting | Hare-only transect series; methodology and data dictionary are published separately. |
-| Yukon boreal community monitoring | 1973–2022 | Annual permanent hare pellet plots; predator snow-track counts on fixed routes after fresh snowfall; site-specific protocols | Potential paired multi-species pattern series, but predator tracks are an index and survey effort/weather/site differences must be retained. The underlying CEMP summary data are not openly downloadable from the project page; obtain collaborator permission before reuse. |
+| Yukon boreal community monitoring | 1973–2022 | Hare live-trapping / spatial capture-mark-recapture at Kluane plus annual summer pellet plots across sites; winter lynx/coyote snow-track indices on fixed routes at Kluane (since 1987) and Mayo (since 1999) | Potential paired multi-species pattern series, but hare and predator methods differ; snow tracks are effort- and snowfall-dependent indices. The underlying CEMP summary data are not openly downloadable from the project page; obtain collaborator permission before reuse. |
 
 ## Source links
 
@@ -49,7 +49,7 @@ hare and predator survey effort. Kluane individual-level capture histories
 require a dedicated observation model; do not reduce them to arbitrary annual
 counts.
 
-At this milestone, the registry and BNZ site-year CSV importer are implemented, but the BNZ raw file has not yet been downloaded, checksum-verified or run through the model. The other registered raw files also remain un-ingested. No model-fit results are claimed from these additional sources.
+At this milestone, the registry and BNZ site-year CSV importer are implemented. The importer rejects duplicate tray keys, treats blank pellet fields as missing rather than zero, preserves missing-tray counts and aggregates only within site-year. The optional benchmark fits each site independently and applies year-gap-aware AR(1) forecasts. The BNZ raw file has not yet been downloaded, checksum-verified or run through the model; the workflow records a SHA-256 when the file is supplied. The other registered raw files also remain un-ingested. No model-fit results are claimed from these additional sources.
 
 ---
 
