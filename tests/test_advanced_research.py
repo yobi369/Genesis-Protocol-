@@ -63,6 +63,10 @@ def test_matched_gp_runs_four_landscapes_with_paired_replicates():
         "foraging", "energy_conservation", "cooperation", "balanced"
     }
     assert all(row["replicates"] == 30 for row in result["results"].values())
+    assert all("bootstrap_95_percentile_interval" in row["paired"]
+               for row in result["results"].values())
+    assert all(row["mean_tree_depth"] >= 1 for row in result["results"].values())
+    assert all(row["mean_tree_size"] >= 1 for row in result["results"].values())
 
 
 def test_predator_reproduction_campaign_reports_species_specific_holdout():
@@ -85,3 +89,14 @@ def test_predator_reproduction_campaign_reports_species_specific_holdout():
     assert "bootstrap_95_percentile_interval" in (
         result["holdout_change_vs_baseline"]["predator_log_rmse"]
     )
+
+
+def test_richer_tree_gp_campaign_emits_nested_bounded_programs():
+    from genesis_protocol.advanced_gp import run_matched_gp_landscapes
+
+    result = run_matched_gp_landscapes(tuple(range(30)), population_size=6, generations=4)
+    assert "nested sequence/energy-guard/repeat grammar" in result["design"]
+    for landscape in result["results"].values():
+        assert landscape["paired"]["n"] == 30
+        assert len(landscape["raw_replicates"]) == 30
+        assert landscape["tree_budget_exhaustion_rate"] >= 0
