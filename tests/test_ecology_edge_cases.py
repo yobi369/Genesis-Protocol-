@@ -2,7 +2,7 @@ from genesis_protocol.ecology import EcologyConfig, EcosystemEngine, Environment
 from genesis_protocol.genome import Genome, Instruction, Op
 
 
-def test_species_without_survivors_are_reported_extinct() -> None:
+def test_zero_energy_movement_organisms_do_not_survive() -> None:
     species = (SpeciesDefinition(0, "fragile", 4),)
     engine = EcosystemEngine(
         species,
