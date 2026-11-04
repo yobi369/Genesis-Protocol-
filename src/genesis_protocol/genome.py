@@ -13,7 +13,10 @@ class Op(StrEnum):
     MOVE = "move"
     GATHER = "gather"
     REST = "rest"
-    COOPERATE = "cooperate"\n    IF_ENERGY_BELOW = "if_energy_below"\n    IF_RESOURCES_BELOW = "if_resources_below"\n    REPEAT_PREVIOUS = "repeat_previous"
+    COOPERATE = "cooperate"
+    IF_ENERGY_BELOW = "if_energy_below"
+    IF_RESOURCES_BELOW = "if_resources_below"
+    REPEAT_PREVIOUS = "repeat_previous"
 
 
 @dataclass(frozen=True, slots=True)
