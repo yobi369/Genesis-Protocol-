@@ -16,7 +16,7 @@ jobs:
   replicated-research:
     name: 30-seed research campaign
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -25,46 +25,46 @@ jobs:
           cache: pip
       - name: Install research dependencies
         run: python -m pip install -e ".[dev,research]"
-      - name: Validate research implementation
+      - name: Validate original research implementation
         run: pytest -q tests/test_research_validation.py
-      - name: Run 30-seed validation campaign
+      - name: Validate advanced ecological and GP experiments
+        run: pytest -q tests/test_advanced_research.py
+      - name: Run original 30-seed validation campaign
         run: genesis-research-validation --seeds 30 --output artifacts/research-validation.json
-      - name: Test advanced ecological and GP experiments\n        run: pytest -q tests/test_advanced_research.py\n      - name: Run advanced predator and tree-GP campaign\n        run: genesis-advanced-research --seeds 30 --output artifacts/advanced-research-validation.json\n      - name: Run matched multi-landscape GP campaign\n        run: genesis-gp-landscapes --seeds 30 --output artifacts/matched-gp-landscapes.json\n      - name: Publish campaign summary
+      - name: Run predator reproduction and advanced tree-GP campaign
+        run: genesis-advanced-research --seeds 30 --output artifacts/advanced-research-validation.json
+      - name: Run matched multi-landscape GP campaign
+        run: genesis-gp-landscapes --seeds 30 --output artifacts/matched-gp-landscapes.json
+      - name: Publish campaign summary
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
-          result = json.loads(Path("artifacts/research-validation.json").read_text())
-          print("Seeds:", result["seed_policy"]["count"])
-          for condition, value in result["ecological_replicates"]["conditions"].items():
-              print(condition, "replicates:", len(value["replicates"]))
-          print("Spatial replicates:", len(result["spatial_reference_comparison"]["replicates"]))
-          print("Speciation distributions:", list(result["speciation_sensitivity"]["distributions"]))
-          print("NSGA-II reference:", result["nsga2_reference_benchmark"]["reference"])
-          print("Tree GP replicates:", len(result["tree_vs_linear_gp"]["replicates"]))
-          empirical = result["empirical_calibration"]
-          for name, model in empirical["naive_baselines"]["results"].items():
-              print(name, "holdout log-RMSE:",
-                    model["holdout_log_rmse"], "prey:",
-                    model["holdout_log_rmse_prey"], "predators:",
-                    model["holdout_log_rmse_predators"])
-          for name, model in empirical["ode_reference_calibration"]["models"].items():
-              print(name, "holdout log-RMSE:",
-                    model["holdout_log_rmse"], "prey:",
-                    model["holdout_log_rmse_prey"], "predators:",
-                    model["holdout_log_rmse_predators"])
-          spatial = empirical["spatial_model_calibration"]
-          print("spatial agent model holdout log-RMSE:",
-                spatial["holdout_log_rmse"], "prey:",
-                spatial["holdout_log_rmse_prey"], "predators:",
-                spatial["holdout_log_rmse_predators"])
+          for name in ("research-validation.json", "advanced-research-validation.json",
+                       "matched-gp-landscapes.json"):
+              data = json.loads(Path("artifacts", name).read_text())
+              print(name, "schema:", data.get("schema", "matched-gp-landscapes"))
+          advanced = json.loads(Path("artifacts/advanced-research-validation.json").read_text())
+          print("Predator holdout changes:", advanced["predator_reproduction"]["holdout_change_vs_baseline"])
+          print("Tree operator seed count:", len(advanced["richer_tree_operators"]["replicates"]))
+          gp = json.loads(Path("artifacts/matched-gp-landscapes.json").read_text())
+          for landscape, result in gp["results"].items():
+              print(landscape, "paired tree-minus-linear:", result["paired_tree_minus_linear_mean"])
           PY
       - uses: actions/upload-artifact@v4
         with:
           name: genesis-research-validation-30-seeds
           path: artifacts/research-validation.json
           if-no-files-found: error
-          retention-days: 30\n      - uses: actions/upload-artifact@v4\n        with:\n          name: genesis-advanced-research-30-seeds\n          path: |\n            artifacts/advanced-research-validation.json\n            artifacts/matched-gp-landscapes.json\n          if-no-files-found: error\n          retention-days: 30
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        with:
+          name: genesis-advanced-research-30-seeds
+          path: |
+            artifacts/advanced-research-validation.json
+            artifacts/matched-gp-landscapes.json
+          if-no-files-found: error
+          retention-days: 30
 
   browser-usability:
     name: Browser workbench usability and scale
