@@ -49,7 +49,7 @@ hare and predator survey effort. Kluane individual-level capture histories
 require a dedicated observation model; do not reduce them to arbitrary annual
 counts.
 
-At this milestone, the registry and BNZ site-year CSV importer are implemented. The importer rejects duplicate tray keys, treats blank pellet fields as missing rather than zero, preserves missing-tray counts and aggregates only within site-year. The optional benchmark fits each site independently and applies year-gap-aware AR(1) forecasts. The BNZ raw file has not yet been downloaded, checksum-verified or run through the model; the workflow records a SHA-256 when the file is supplied. The other registered raw files also remain un-ingested. No model-fit results are claimed from these additional sources.
+The registry and BNZ site-year CSV importer are implemented. The importer rejects duplicate tray keys, treats blank pellet fields as missing rather than zero, preserves missing-tray counts and aggregates only within site-year. The optional benchmark fits each site independently and applies year-gap-aware AR(1) forecasts. The research workflow now downloads the public BNZ:69 CSV, validates it through this importer, records its SHA-256 in the JSON artifact and runs the prey-only holdout benchmark. The raw CSV is not committed; the checksum and measured results are available only after the corresponding workflow completes. Tetlin, Wood Buffalo and Kluane raw data remain registered but not yet ingested. No results from those sources are claimed.
 
 ---
 
