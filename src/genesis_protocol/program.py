@@ -19,7 +19,7 @@ class Action:
     amount: int = 1
 
     def __post_init__(self) -> None:
-        if self.op not in (Op.MOVE, Op.GATHER, Op.REST, Op.COOPERATE):
+        if not isinstance(self.op, Op) or self.op not in (Op.MOVE, Op.GATHER, Op.REST, Op.COOPERATE):
             raise ValueError("Action requires a primitive action opcode")
         if not 1 <= self.amount <= 5:
             raise ValueError("action amount must be between 1 and 5")
@@ -113,7 +113,7 @@ class Program:
         if not 0 <= rate <= 1:
             raise ValueError("mutation rate must be in [0, 1]")
         nodes = list(self.nodes)
-        for index, node in enumerate(nodes):
+        for index in range(len(nodes)):
             if rng.random() < rate:
                 nodes[index] = Program.random(rng, 1, 1).nodes[0]
         if rng.random() < rate and len(nodes) < 32:
