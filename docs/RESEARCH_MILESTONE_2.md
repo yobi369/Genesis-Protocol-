@@ -16,7 +16,7 @@ Exact Levenshtein edit distance is normalized by the longer genome length. Repre
 
 ## 5. NSGA-II reference and convergence
 
-The research module includes an independently written nondominated-front reference and a three-objective hypervolume trajectory. Hypervolume assumes maximization and a fixed reference point; comparisons are meaningful only when objective scales and reference point are held constant. The existing evolutionary selection remains NSGA-II-inspired rather than being silently relabeled as a fully validated NSGA-II implementation.
+The research module includes independently written nondominated sorting ranks, normalized crowding distances, capacity-limited NSGA-II reference selection, and a three-objective hypervolume trajectory. Hypervolume assumes maximization and a fixed reference point; comparisons are meaningful only when objective scales and reference point are held constant. The reference selector is tested against small hand-constructed fronts; broader benchmark comparisons and convergence studies remain required before making performance claims.
 
 ## 6. Nested tree genetic programming
 
