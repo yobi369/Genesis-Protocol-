@@ -13,11 +13,11 @@ authors = [{ name = "Genesis Protocol contributors" }]
 dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0", "pytest-cov>=5.0", "ruff>=0.6", "mypy>=1.10"]
+dev = ["pytest>=8.0", "pytest-cov>=5.0", "ruff>=0.6", "mypy>=1.10", "playwright>=1.50"]\nresearch = ["deap>=1.4"]
 
 [project.scripts]
 genesis-run = "genesis_protocol.cli:main"
-genesis-ecology = "genesis_protocol.ecology_cli:main"
+genesis-ecology = "genesis_protocol.ecology_cli:main"\ngenesis-research-validation = "genesis_protocol.validation:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
