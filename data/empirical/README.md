@@ -11,7 +11,7 @@ silently converted into abundance counts.
 | Tetlin National Wildlife Refuge, Alaska | 1990–2024 | Snowshoe hare pellet counts across quadrats and sites | Hare-only series; raw CSV and ServCat processing record are linked in Data.gov metadata. Not paired predator abundance. |
 | Kluane hare grids, Yukon | Multi-decade monitoring; Dryad release includes monitoring, live-trap and experimental records | Live trapping / capture-mark-recapture, experimental grids and small-mammal monitoring | Valuable independent hare demographic and experimental evidence; inspect individual workbook metadata and use a clearly specified subset. |
 | Wood Buffalo National Park, Canada | 2006–2017 | Annual June fecal-pellet counts on four permanent transects; plots cleared after counting | Hare-only transect series; methodology and data dictionary are published separately. |
-| Yukon boreal community monitoring | 1973–2022 | Annual permanent hare pellet plots; predator snow-track counts on fixed routes after fresh snowfall; site-specific protocols | Potential paired multi-species pattern series, but predator tracks are an index and survey effort/weather/site differences must be retained. |
+| Yukon boreal community monitoring | 1973–2022 | Annual permanent hare pellet plots; predator snow-track counts on fixed routes after fresh snowfall; site-specific protocols | Potential paired multi-species pattern series, but predator tracks are an index and survey effort/weather/site differences must be retained. The underlying CEMP summary data are not openly downloadable from the project page; obtain collaborator permission before reuse. |
 
 ## Source links
 
@@ -26,6 +26,7 @@ silently converted into abundance counts.
   https://open.canada.ca/data/en/dataset/045239c3-f835-4be8-921a-f17caf264097
 - Yukon boreal community monitoring methods and long-term series:
   https://www.frontiersin.org/journals/ecology-and-evolution/articles/10.3389/fevo.2023.1187222/full
+- Kluane/CEMP data-access note: the program's public page states that its compiled summary has not yet been published and requests permission from the project lead and collaborators before use: https://www.zoology.ubc.ca/~krebs/kluane.html
 - Kluane 1977–2020 capture-mark-recapture demographic study:
   https://www.usgs.gov/publications/demographic-mechanisms-snowshoe-hare-population-cycles-yukon-canada
 
