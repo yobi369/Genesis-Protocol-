@@ -24,7 +24,12 @@ __all__ = [
     "Genome",
     "Instruction",
     "Op",
-    "Organism",\n    "Program",\n    "Action",\n    "IfEnergyBelow",\n    "IfResourcesBelow",\n    "RepeatAction",
+    "Organism",
+    "Program",
+    "Action",
+    "IfEnergyBelow",
+    "IfResourcesBelow",
+    "RepeatAction",
 ]
 
 __version__ = "0.2.0"
