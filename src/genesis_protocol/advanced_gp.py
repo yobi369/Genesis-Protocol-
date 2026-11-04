@@ -4,15 +4,15 @@ from __future__ import annotations
 import json
 import random
 import statistics
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 from .evaluator import evaluate
 from .genome import Op
 from .models import Environment, Organism
 from .program import Action, IfEnergyBelow, Program, RepeatAction
 from .tree_gp import EnergyGuard, Primitive, RepeatNode, SequenceNode, TreeNode, evaluate_tree
-
 
 ACTIONS = (Op.MOVE, Op.GATHER, Op.REST, Op.COOPERATE)
 LANDSCAPES = ("foraging", "energy_conservation", "cooperation", "balanced")
