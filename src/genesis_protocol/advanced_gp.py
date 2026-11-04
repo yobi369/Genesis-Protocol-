@@ -1,4 +1,10 @@
-"""Matched tree/linear GP comparisons across distinct fitness landscapes."""
+"""Matched tree/linear GP comparisons across distinct fitness landscapes.
+
+Both populations start from identical executable phenotypes. The tree side is
+allowed to evolve nested sequence/guard/repeat structure; the linear side
+remains in the bounded flat program grammar. Results are paired by seed but
+are not claims of equal representational capacity.
+"""
 from __future__ import annotations
 
 import json
@@ -8,11 +14,21 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
+from .advanced_research import crossover_tree_advanced, mutate_tree_advanced
 from .evaluator import evaluate
 from .genome import Op
 from .models import Environment, Organism
 from .program import Action, IfEnergyBelow, Program, RepeatAction
-from .tree_gp import EnergyGuard, Primitive, RepeatNode, SequenceNode, TreeNode, evaluate_tree
+from .tree_gp import (
+    EnergyGuard,
+    Primitive,
+    RepeatNode,
+    SequenceNode,
+    TreeNode,
+    evaluate_tree,
+    tree_depth,
+    tree_size,
+)
 
 ACTIONS = (Op.MOVE, Op.GATHER, Op.REST, Op.COOPERATE)
 LANDSCAPES = ("foraging", "energy_conservation", "cooperation", "balanced")
@@ -42,20 +58,6 @@ def _random_pair(rng: random.Random) -> tuple[Program, SequenceNode]:
     return program, SequenceNode(tuple(children))
 
 
-def _program_from_tree(tree: SequenceNode) -> Program:
-    nodes = []
-    for node in tree.children:
-        if isinstance(node, Primitive):
-            nodes.append(Action(node.op, node.amount))
-        elif isinstance(node, EnergyGuard) and isinstance(node.body, Primitive):
-            nodes.append(IfEnergyBelow(node.threshold, Action(node.body.op, node.body.amount)))
-        elif isinstance(node, RepeatNode) and isinstance(node.body, Primitive):
-            nodes.append(RepeatAction(Action(node.body.op, node.body.amount), node.count - 1))
-        else:
-            raise TypeError("matched comparison tree escaped its common grammar")
-    return Program(tuple(nodes))
-
-
 def _score(metrics: tuple[float, float, float, float], landscape: str) -> float:
     gathered, cooperation, energy, _instructions = metrics
     if landscape == "foraging":
@@ -72,7 +74,7 @@ def _score(metrics: tuple[float, float, float, float], landscape: str) -> float:
 def _linear_metrics(program: Program, seed_id: int) -> tuple[float, float, float, float]:
     result = evaluate(
         Organism(seed_id, program.compile()),
-        Environment(identifier="matched-multilandscape-v1", resource_supply=20,
+        Environment(identifier="matched-multilandscape-v2", resource_supply=20,
                     movement_cost=1, gather_reward=2, cooperation_bonus=1),
         initial_energy=20, instruction_budget=256,
     )
@@ -100,18 +102,12 @@ def _mutate_program(program: Program, rng: random.Random, rate: float = 0.18) ->
     return Program(tuple(nodes[:16]))
 
 
-def _mutate_tree(tree: SequenceNode, rng: random.Random, rate: float = 0.18) -> SequenceNode:
-    children = list(tree.children)
-    for index in range(len(children)):
-        if rng.random() < rate:
-            _, replacement = _random_pair(rng)
-            children[index] = replacement.children[0]
-    if rng.random() < rate and len(children) < 16:
-        _, replacement = _random_pair(rng)
-        children.insert(rng.randrange(len(children) + 1), replacement.children[0])
-    if rng.random() < rate and len(children) > 1:
-        del children[rng.randrange(len(children))]
-    return SequenceNode(tuple(children[:16]))
+def _mutate_tree(tree: SequenceNode, rng: random.Random) -> SequenceNode:
+    candidate = mutate_tree_advanced(tree, rng, max_depth=6, max_size=64)
+    if isinstance(candidate, SequenceNode):
+        return candidate
+    wrapped = SequenceNode((candidate,))
+    return wrapped if tree_depth(wrapped) <= 6 and tree_size(wrapped) <= 64 else tree
 
 
 def _cross_program(left: Program, right: Program, rng: random.Random) -> Program:
@@ -122,10 +118,11 @@ def _cross_program(left: Program, right: Program, rng: random.Random) -> Program
 
 
 def _cross_tree(left: SequenceNode, right: SequenceNode, rng: random.Random) -> SequenceNode:
-    a = rng.randrange(len(left.children) + 1)
-    b = rng.randrange(len(right.children) + 1)
-    children = left.children[:a] + right.children[b:]
-    return SequenceNode(tuple(children[:16] or (rng.choice(left.children),)))
+    candidate = crossover_tree_advanced(left, right, rng, max_depth=6, max_size=64)
+    if isinstance(candidate, SequenceNode):
+        return candidate
+    wrapped = SequenceNode((candidate,))
+    return wrapped if tree_depth(wrapped) <= 6 and tree_size(wrapped) <= 64 else left
 
 
 def _tournament(population: Sequence[Any], scores: Sequence[float], rng: random.Random) -> Any:
@@ -133,14 +130,35 @@ def _tournament(population: Sequence[Any], scores: Sequence[float], rng: random.
     return population[max(candidates, key=lambda i: scores[i])]
 
 
+def _paired_summary(differences: Sequence[float], seed: int) -> dict[str, Any]:
+    rng = random.Random(seed)
+    samples = sorted(
+        statistics.mean(rng.choices(differences, k=len(differences)))
+        for _ in range(3000)
+    )
+    mean = statistics.mean(differences)
+    sd = statistics.stdev(differences) if len(differences) > 1 else 0.0
+    return {
+        "n": len(differences),
+        "mean_tree_minus_linear": mean,
+        "sd_paired_difference": sd,
+        "bootstrap_95_percentile_interval": [
+            samples[int(0.025 * (len(samples) - 1))],
+            samples[int(0.975 * (len(samples) - 1))],
+        ],
+    }
+
+
 def run_matched_gp_landscapes(seeds: Sequence[int], *,
                               population_size: int = 36,
                               generations: int = 20) -> dict[str, Any]:
-    """Compare paired common-grammar phenotypes under four fitness landscapes."""
+    """Compare paired initial phenotypes across four objectives and richer tree grammar."""
     if len(seeds) < 30 or len(set(seeds)) != len(seeds):
         raise ValueError("multi-landscape GP requires >=30 unique seeds")
-    all_rows = []
+    if population_size < 6 or generations < 2:
+        raise ValueError("population_size must be >=6 and generations >=2")
     summaries: dict[str, Any] = {}
+    all_rows = []
     for landscape_index, landscape in enumerate(LANDSCAPES):
         rows = []
         for seed in seeds:
@@ -171,29 +189,51 @@ def run_matched_gp_landscapes(seeds: Sequence[int], *,
                 linear_pop, tree_pop = next_l, next_t
             linear_final = max(_score(_linear_metrics(p, i), landscape)
                                for i, p in enumerate(linear_pop))
-            tree_final = max(_score(_tree_metrics(t), landscape)
-                             for t in tree_pop)
+            tree_final = max(_score(_tree_metrics(t), landscape) for t in tree_pop)
             rows.append({
                 "seed": seed, "linear_best": max(linear_history),
                 "tree_best": max(tree_history), "linear_final_best": linear_final,
                 "tree_final_best": tree_final,
                 "tree_minus_linear": max(tree_history) - max(linear_history),
+                "mean_tree_depth": statistics.mean(tree_depth(t) for t in tree_pop),
+                "mean_tree_size": statistics.mean(tree_size(t) for t in tree_pop),
+                "mean_linear_nodes": statistics.mean(len(p.nodes) for p in linear_pop),
+                "tree_budget_exhaustion_rate": statistics.mean(
+                    evaluate_tree(t, instruction_budget=256).budget_exhausted
+                    for t in tree_pop
+                ),
             })
         differences = [r["tree_minus_linear"] for r in rows]
         summaries[landscape] = {
             "replicates": len(rows),
             "linear_best_mean": statistics.mean(r["linear_best"] for r in rows),
             "tree_best_mean": statistics.mean(r["tree_best"] for r in rows),
-            "paired_tree_minus_linear_mean": statistics.mean(differences),
+            "paired": _paired_summary(differences, seed=seeds[0] + landscape_index),
+            "mean_tree_depth": statistics.mean(r["mean_tree_depth"] for r in rows),
+            "mean_tree_size": statistics.mean(r["mean_tree_size"] for r in rows),
+            "mean_linear_nodes": statistics.mean(r["mean_linear_nodes"] for r in rows),
+            "tree_budget_exhaustion_rate": statistics.mean(
+                r["tree_budget_exhaustion_rate"] for r in rows
+            ),
             "raw_replicates": rows,
         }
         all_rows.extend({"landscape": landscape, **row} for row in rows)
     return {
-        "design": "30+ paired seeds; identical initial phenotypes; common action/energy-guard/repeat grammar; same evaluator budgets and evolution settings",
+        "design": (
+            "30+ paired seeds; identical initial executable phenotypes; same objective, "
+            "environment and evaluation budget; linear GP uses flat instruction grammar, "
+            "tree GP evolves nested sequence/energy-guard/repeat grammar with bounded "
+            "point/subtree/hoist mutation and subtree crossover"
+        ),
         "population_size": population_size, "generations": generations,
         "fitness_landscapes": list(LANDSCAPES), "results": summaries,
         "raw_replicates": all_rows,
-        "caveat": "This isolates representation/operator behavior only within the shared grammar. Arbitrary nested-tree expressivity is evaluated separately by the advanced operator stress tests; these scores are not directly comparable across landscapes.",
+        "caveat": (
+            "After initialization the representations have different expressive capacity. "
+            "The comparison measures these specific grammar/operator packages, not an "
+            "isolated universal effect of tree versus linear representation. Objective "
+            "scores are only compared within each landscape."
+        ),
     }
 
 
@@ -209,7 +249,13 @@ def main() -> None:
     path = Path(args.output)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(result, indent=2, sort_keys=True), encoding="utf-8")
-    print(json.dumps({"output": args.output, "landscapes": result["fitness_landscapes"]}, indent=2))
+    print(json.dumps({
+        "output": args.output,
+        "landscapes": result["fitness_landscapes"],
+        "paired_summaries": {
+            name: value["paired"] for name, value in result["results"].items()
+        },
+    }, indent=2))
 
 
 if __name__ == "__main__":
