@@ -1,6 +1,11 @@
 import json
 
-from genesis_protocol.ecology import EcologyConfig, EcosystemEngine, EnvironmentalPhase, SpeciesDefinition
+from genesis_protocol.ecology import (
+    EcologyConfig,
+    EcosystemEngine,
+    EnvironmentalPhase,
+    SpeciesDefinition,
+)
 from genesis_protocol.lab import render_lab
 
 
