@@ -5,7 +5,7 @@ It is a research simulation, not a claim of biological equivalence.
 """
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 import random
 from statistics import mean
 from typing import Any
@@ -54,7 +54,7 @@ class EcologyConfig:
     speciation_distance: float = 0.65
 
     def __post_init__(self) -> None:
-        if self.generations < 1 or self.tournament_size < 1 or self.instruction_budget < 1:
+        if self.generations < 1 or self.tournament_size < 1 or self.instruction_budget < 1 or self.initial_energy < 0:
             raise ValueError("generation, tournament and instruction budgets must be positive")
         if not 0 <= self.mutation_rate <= 1 or not 0 <= self.crossover_rate <= 1:
             raise ValueError("mutation and crossover rates must be in [0, 1]")
