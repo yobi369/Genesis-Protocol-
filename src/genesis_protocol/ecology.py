@@ -277,16 +277,8 @@ class EcosystemEngine:
             partner_map[order[index].organism_id] = order[index + 1].organism_id
             partner_map[order[index + 1].organism_id] = order[index].organism_id
         by_id = {item.organism_id: item for item in population}
-        cooperative = {
-            item.organism_id: any(gene.op is Op.COOPERATE for gene in item.genome.instructions)
-            for item in population
-        }
-        reciprocal_ids: set[int] = set()
-        for organism_id, partner_id in partner_map.items():
-            if cooperative[organism_id] and cooperative[partner_id]:
-                reciprocal_ids.add(organism_id)
-
         outcomes: list[OrganismOutcome] = []
+        raw_results: list[tuple[EcologicalOrganism, int, int, int]] = []
         for organism in order:
             energy = self.config.initial_energy
             gathered = 0
@@ -331,15 +323,23 @@ class EcosystemEngine:
                 apply_action(instruction.op, instruction.amount)
                 previous_action = (instruction.op, instruction.amount)
                 pc += 1
-            reciprocal = min(attempts, 5) if organism.organism_id in reciprocal_ids else 0
+            raw_results.append((organism, energy, gathered, attempts))
+
+        attempts_by_id = {item.organism_id: attempts for item, _, _, attempts in raw_results}
+        for organism, energy, gathered, attempts in raw_results:
+            partner_id = partner_map.get(organism.organism_id)
+            reciprocal = (
+                min(attempts, 5)
+                if attempts > 0 and partner_id is not None and attempts_by_id.get(partner_id, 0) > 0
+                else 0
+            )
             if attempts and reciprocal == 0:
                 energy = max(0, energy - phase.unreciprocated_cost * attempts)
             energy += reciprocal * phase.cooperation_reward
-            survived = energy > 0
             outcomes.append(OrganismOutcome(
                 organism.organism_id, organism.species_id,
                 FitnessVector(float(gathered), float(energy), float(reciprocal)),
-                energy, gathered, attempts, reciprocal, survived,
+                energy, gathered, attempts, reciprocal, energy > 0,
             ))
         return outcomes, remaining
 
@@ -396,17 +396,23 @@ class EcosystemEngine:
             if generation == self.config.generations - 1:
                 break
 
-            outcome_by_id = {item.organism_id: item for item in outcomes}
             next_population: list[EcologicalOrganism] = []
             groups: dict[int, list[tuple[EcologicalOrganism, OrganismOutcome, int, float]]] = {}
             for entry in ranked:
-                groups.setdefault(entry[0].species_id, []).append(entry)
+                if entry[1].survived:
+                    groups.setdefault(entry[0].species_id, []).append(entry)
+            current_counts: dict[int, int] = {}
+            for organism in population:
+                current_counts[organism.species_id] = current_counts.get(organism.species_id, 0) + 1
 
+            # A species with no surviving members goes extinct. Surviving species
+            # reproduce into their previous niche capacity, subject to the total
+            # population being reduced by extinctions.
             for species_id, group in groups.items():
-                target_count = len(group)
-                elite_count = min(target_count - 1, int(target_count * self.config.elite_fraction))
+                target_count = current_counts[species_id]
+                elite_count = min(len(group), max(0, int(target_count * self.config.elite_fraction)))
                 next_population.extend(item[0] for item in group[:elite_count])
-                while sum(item.species_id == species_id for item in next_population) < target_count:
+                for _ in range(target_count - elite_count):
                     contestants = self.rng.sample(group, min(self.config.tournament_size, len(group)))
                     parent_a = min(contestants, key=lambda item: (item[2], -item[3]))[0]
                     contestants = self.rng.sample(group, min(self.config.tournament_size, len(group)))
@@ -421,18 +427,9 @@ class EcosystemEngine:
                     next_population.append(child)
                     lineage.append(LineageRecord(child.organism_id, child.species_id,
                                                   child.parent_ids, child.generation_born))
-            # Keep population size stable if a species split changed membership counts.
-            if len(next_population) > len(population):
-                next_population = next_population[:len(population)]
-            while len(next_population) < len(population):
-                parent = self.rng.choice(ranked)[0]
-                genome = parent.genome.mutate(self.rng, self.config.mutation_rate)
-                child_species = self._speciate(genome, parent, generation + 1)
-                child = self._new(child_species, genome, generation + 1, (parent.organism_id,))
-                next_population.append(child)
-                lineage.append(LineageRecord(child.organism_id, child.species_id,
-                                              child.parent_ids, child.generation_born))
             population = next_population
+            if not population:
+                break
 
         return EcosystemResult(
             self.seed, self.config, tuple(self.species.values()), self.schedule,
