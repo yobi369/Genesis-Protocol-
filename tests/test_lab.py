@@ -22,4 +22,6 @@ def test_lab_generates_self_contained_html(tmp_path) -> None:
     assert "Genesis Protocol" in html
     assert "generation" in html
     assert "test species" in html
+    assert "lineage-tree" in html
+    assert "parent_ids" in html
     json.dumps(result.to_dict())
