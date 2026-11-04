@@ -9,7 +9,7 @@ from .ecology import (
 )
 from .engine import EvolutionConfig, EvolutionEngine, EvolutionResult
 from .genome import Genome, Instruction, Op
-from .models import Organism
+from .models import Organism\nfrom .program import Program, Action, IfEnergyBelow, IfResourcesBelow, RepeatAction
 
 __all__ = [
     "EcologyConfig",
@@ -23,7 +23,7 @@ __all__ = [
     "Genome",
     "Instruction",
     "Op",
-    "Organism",
+    "Organism",\n    "Program",\n    "Action",\n    "IfEnergyBelow",\n    "IfResourcesBelow",\n    "RepeatAction",
 ]
 
 __version__ = "0.2.0"
