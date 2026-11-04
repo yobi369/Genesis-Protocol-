@@ -15,6 +15,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from .empirical_datasets import (
+    load_bonanza_hare_pellets_csv,
+    run_bonanza_prey_only_benchmark,
+)
 from .genome import Op
 from .reference_ecology import PopulationPoint, load_hudson_bay_csv
 from .research import SpatialConfig, SpatialEcosystem
@@ -418,7 +422,10 @@ def run_richer_tree_operator_smoke(seeds: Sequence[int]) -> dict[str, Any]:
             "replicates": rows}
 
 
-def run_advanced_campaign(output: str | Path, *, seed_count: int = 30) -> dict[str, Any]:
+def run_advanced_campaign(
+    output: str | Path, *, seed_count: int = 30,
+    bonanza_csv: str | Path | None = None,
+) -> dict[str, Any]:
     if seed_count < 30:
         raise ValueError("advanced campaign requires at least 30 seeds")
     seeds = tuple(range(5001, 5001 + seed_count))
@@ -432,7 +439,10 @@ def run_advanced_campaign(output: str | Path, *, seed_count: int = 30) -> dict[s
         "predator_reproduction": run_predator_reproduction_experiment(observations, seeds),
         "richer_tree_operators": run_richer_tree_operator_smoke(seeds),
         "empirical_dataset_registry": {
-            "status": "candidate_sources_documented; raw data import and harmonization pending",
+            "status": (
+                "Bonanza site-year importer and prey-only holdout benchmark implemented; "
+                "raw file not yet downloaded or executed"
+            ),
             "sources": [
                 {"name": "Bonanza Creek LTER BNZ:69 hare pellet trays", "years": "1985-2025",
                  "species": "hare only",
@@ -460,6 +470,16 @@ def run_advanced_campaign(output: str | Path, *, seed_count: int = 30) -> dict[s
             ),
         },
     }
+    if bonanza_csv is not None:
+        bonanza_observations = load_bonanza_hare_pellets_csv(bonanza_csv)
+        result["bonanza_prey_only_validation"] = run_bonanza_prey_only_benchmark(
+            bonanza_observations
+        )
+    else:
+        result["bonanza_prey_only_validation"] = {
+            "status": "not_run_no_raw_csv_supplied",
+            "required_file": "BNZ:69 69_litter_wood_pellet_1985-2025.csv",
+        }
     target = Path(output)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(result, indent=2, sort_keys=True), encoding="utf-8")
@@ -470,8 +490,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run Genesis Protocol's advanced research campaign")
     parser.add_argument("--seeds", type=int, default=30)
     parser.add_argument("--output", default="artifacts/advanced-research-validation.json")
+    parser.add_argument("--bonanza-csv", default=None,
+                        help="optional path to the downloaded BNZ:69 raw CSV")
     args = parser.parse_args()
-    result = run_advanced_campaign(args.output, seed_count=args.seeds)
+    result = run_advanced_campaign(
+        args.output, seed_count=args.seeds, bonanza_csv=args.bonanza_csv
+    )
     print(json.dumps({
         "output": args.output, "seed_count": args.seeds,
         "predator_baseline": result["predator_reproduction"]["baseline"],
