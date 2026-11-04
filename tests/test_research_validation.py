@@ -1,4 +1,4 @@
-## ruff: noqa: I001
+# ruff: noqa: I001
 import importlib.util
 import math
 from pathlib import Path
