@@ -1,10 +1,22 @@
 """Genesis Protocol evolutionary computing laboratory."""
 
+from .ecology import (
+    EcologyConfig,
+    EcosystemEngine,
+    EcosystemResult,
+    EnvironmentalPhase,
+    SpeciesDefinition,
+)
 from .engine import EvolutionConfig, EvolutionEngine, EvolutionResult
 from .genome import Genome, Instruction, Op
 from .models import Organism
 
 __all__ = [
+    "EcologyConfig",
+    "EcosystemEngine",
+    "EcosystemResult",
+    "EnvironmentalPhase",
+    "SpeciesDefinition",
     "EvolutionConfig",
     "EvolutionEngine",
     "EvolutionResult",
@@ -14,4 +26,4 @@ __all__ = [
     "Organism",
 ]
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
