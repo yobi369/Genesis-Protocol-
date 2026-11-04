@@ -20,10 +20,6 @@ from .empirical_datasets import (
     load_bonanza_hare_pellets_csv,
     run_bonanza_prey_only_benchmark,
 )
-from .empirical_datasets import (
-    load_bonanza_hare_pellets_csv,
-    run_bonanza_prey_only_benchmark,
-)
 from .genome import Op
 from .reference_ecology import PopulationPoint, load_hudson_bay_csv
 from .research import SpatialConfig, SpatialEcosystem
