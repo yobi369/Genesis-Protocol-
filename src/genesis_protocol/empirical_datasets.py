@@ -115,8 +115,10 @@ def run_bonanza_prey_only_benchmark(
         mean_forecast = [y_mean] * len(holdout)
         persistence_forecast = [train[-1]] * len(holdout)
 
-        def rmse(prediction: list[float]) -> float:
-            return math.sqrt(sum((a - b) ** 2 for a, b in zip(prediction, holdout)) / len(holdout))
+        def rmse(prediction: list[float], actual: list[float] = holdout) -> float:
+            return math.sqrt(
+                sum((a - b) ** 2 for a, b in zip(prediction, actual)) / len(actual)
+            )
 
         site_results.append({
             "site": site,
