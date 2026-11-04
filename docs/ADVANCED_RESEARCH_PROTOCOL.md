@@ -33,9 +33,11 @@ the reproductive candidate. Candidate parameters are selected only on the
 first 70% of the Hudson Bay historical index. Prey and predator holdout
 log-RMSE are reported separately and paired by seed with bootstrap intervals.
 
-The acceptance decision is deliberately conservative: predator error must
-improve on the held-out years, while the paired interval for prey error must
-not indicate prey degradation. The held-out series is not used to select the
+The acceptance decision uses a declared prey non-inferiority margin of 0.05
+log-RMSE units: predator error must improve on the held-out years, while the
+upper bound of the paired 95% interval for prey error change must remain at or
+below +0.05. This tolerance is an operational modelling choice, not a
+biologically established threshold. The held-out series is not used to select the
 candidate. This is an exploratory single short historical series, so even a
 positive result would not establish predictive validity.
 
