@@ -31,8 +31,19 @@ jobs:
         run: pytest -q tests/test_advanced_research.py
       - name: Run original 30-seed validation campaign
         run: genesis-research-validation --seeds 30 --output artifacts/research-validation.json
+      - name: Download independent Bonanza Creek LTER hare-pellet series
+        run: |
+          mkdir -p data/empirical
+          curl --fail --location --retry 3 --retry-delay 2 \
+            --output data/empirical/69_litter_wood_pellet_1985-2025.csv \
+            'https://www.lter.uaf.edu/data/data-detail/id/php/download_data.php?f=%2Fdata_files%2Fascii%2Ffiles%2F69_litter_wood_pellet_1985-2025.csv'
+          head -n 1 data/empirical/69_litter_wood_pellet_1985-2025.csv
+          sha256sum data/empirical/69_litter_wood_pellet_1985-2025.csv
       - name: Run predator reproduction and advanced tree-GP campaign
-        run: genesis-advanced-research --seeds 30 --output artifacts/advanced-research-validation.json
+        run: |
+          genesis-advanced-research --seeds 30 \
+            --bonanza-csv data/empirical/69_litter_wood_pellet_1985-2025.csv \
+            --output artifacts/advanced-research-validation.json
       - name: Run matched multi-landscape GP campaign
         run: genesis-gp-landscapes --seeds 30 --output artifacts/matched-gp-landscapes.json
       - name: Publish campaign summary
