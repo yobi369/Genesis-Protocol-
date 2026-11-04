@@ -284,6 +284,10 @@ def run_predator_reproduction_experiment(
         - baseline_by_seed[row["seed"]]["holdout_predator_log_rmse"]
         for row in best["replicates"]
     ]
+    prey_comparison = _paired_interval(paired_prey, seed=seeds[0] + 31)
+    predator_comparison = _paired_interval(paired_predators, seed=seeds[0] + 32)
+    prey_non_degraded = prey_comparison["bootstrap_95_percentile_interval"][1] <= 0
+    predator_improved = predator_comparison["bootstrap_95_percentile_interval"][1] < 0
     return {
         "design": "paired 30+ seeds; chronological 70/30 split; model selection uses training years only",
         "split": {"train_count": split, "holdout_count": len(observations) - split,
@@ -298,9 +302,14 @@ def run_predator_reproduction_experiment(
                             if key not in ("replicates", "mean_trajectory")}
                            for row in candidates],
         "holdout_change_vs_baseline": {
-            "prey_log_rmse": _paired_interval(paired_prey, seed=seeds[0] + 31),
-            "predator_log_rmse": _paired_interval(paired_predators, seed=seeds[0] + 32),
+            "prey_log_rmse": prey_comparison,
+            "predator_log_rmse": predator_comparison,
         },
+        "decision": (
+            "predator_improved_without_detectable_prey_degradation"
+            if predator_improved and prey_non_degraded
+            else "improvement_not_demonstrated_under_prey_non_degradation_rule"
+        ),
         "interpretation_rule": (
             "A predator improvement is not accepted if prey holdout RMSE worsens materially. "
             "Parameters are selected on training data only; holdout values are reported once."
