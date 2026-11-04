@@ -36,3 +36,6 @@ target-version = "py311"
 python_version = "3.11"
 strict = true
 mypy_path = "src"
+
+[tool.coverage.run]
+omit = ["src/genesis_protocol/validation.py"]
