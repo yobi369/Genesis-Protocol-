@@ -285,3 +285,80 @@ def pareto_convergence(history: Sequence[Sequence[Sequence[float]]],
         rows.append({"generation": generation, "front_size": len(front),
                      "hypervolume_3d": hypervolume_3d(population, reference)})
     return tuple(rows)
+
+
+def nsga2_ranks(points: Sequence[Sequence[float]]) -> tuple[int, ...]:
+    """Canonical fast nondominated sorting ranks for a maximizing population."""
+    size = len(points)
+    dominates_set: list[list[int]] = [[] for _ in points]
+    dominated_count = [0] * size
+    ranks = [-1] * size
+    front: list[int] = []
+    for i, point in enumerate(points):
+        for j, other in enumerate(points):
+            if i == j:
+                continue
+            if all(a >= b for a, b in zip(point, other)) and any(
+                a > b for a, b in zip(point, other)
+            ):
+                dominates_set[i].append(j)
+            elif all(a >= b for a, b in zip(other, point)) and any(
+                a > b for a, b in zip(other, point)
+            ):
+                dominated_count[i] += 1
+        if dominated_count[i] == 0:
+            ranks[i] = 0
+            front.append(i)
+    rank = 0
+    while front:
+        next_front: list[int] = []
+        for i in front:
+            for j in dominates_set[i]:
+                dominated_count[j] -= 1
+                if dominated_count[j] == 0:
+                    ranks[j] = rank + 1
+                    next_front.append(j)
+        rank += 1
+        front = next_front
+    return tuple(ranks)
+
+
+def nsga2_crowding(points: Sequence[Sequence[float]],
+                   ranks: Sequence[int]) -> tuple[float, ...]:
+    """Compute normalized crowding distance independently for each front."""
+    if len(points) != len(ranks):
+        raise ValueError("each point must have one rank")
+    distances = [0.0] * len(points)
+    for rank in sorted(set(ranks)):
+        members = [i for i, value in enumerate(ranks) if value == rank]
+        if len(members) <= 2:
+            for index in members:
+                distances[index] = float("inf")
+            continue
+        dimensions = len(points[members[0]])
+        for objective in range(dimensions):
+            ordered = sorted(members, key=lambda i: points[i][objective])
+            low = points[ordered[0]][objective]
+            high = points[ordered[-1]][objective]
+            distances[ordered[0]] = float("inf")
+            distances[ordered[-1]] = float("inf")
+            if high == low:
+                continue
+            for position in range(1, len(ordered) - 1):
+                index = ordered[position]
+                if distances[index] != float("inf"):
+                    before = points[ordered[position - 1]][objective]
+                    after = points[ordered[position + 1]][objective]
+                    distances[index] += (after - before) / (high - low)
+    return tuple(distances)
+
+
+def nsga2_select(points: Sequence[Sequence[float]], capacity: int) -> tuple[int, ...]:
+    """Select population indices by nondomination rank then crowding distance."""
+    if capacity < 0:
+        raise ValueError("capacity must be non-negative")
+    if capacity >= len(points):
+        return tuple(range(len(points)))
+    ranks = nsga2_ranks(points)
+    crowding = nsga2_crowding(points, ranks)
+    return tuple(sorted(range(len(points)), key=lambda i: (ranks[i], -crowding[i], i))[:capacity])
