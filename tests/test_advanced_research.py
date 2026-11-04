@@ -1,3 +1,4 @@
+# ruff: noqa: I001
 from genesis_protocol.advanced_gp import run_matched_gp_landscapes
 from genesis_protocol.advanced_research import (
     PredatorReproductionConfig,
