@@ -69,9 +69,9 @@ def test_bonanza_prey_only_benchmark_keeps_sites_separate_and_holds_out_later_ye
 def test_bonanza_loader_treats_blank_pellet_values_as_missing_not_zero(tmp_path: Path):
     source = tmp_path / "bnz.csv"
     source.write_text(
-        "YEAR,SITE,TRAY,PELLET(count)\\n"
-        "1985,FP1A,1,4\\n"
-        "1985,FP1A,2,\\n",
+        "YEAR,SITE,TRAY,PELLET(count)\n"
+        "1985,FP1A,1,4\n"
+        "1985,FP1A,2,\n",
         encoding="utf-8",
     )
     rows = load_bonanza_hare_pellets_csv(source)
@@ -84,9 +84,9 @@ def test_bonanza_loader_treats_blank_pellet_values_as_missing_not_zero(tmp_path:
 def test_bonanza_loader_rejects_duplicate_tray_keys(tmp_path: Path):
     source = tmp_path / "duplicate.csv"
     source.write_text(
-        "YEAR,SITE,TRAY,PELLET(count)\\n"
-        "1985,FP1A,1,4\\n"
-        "1985,FP1A,1,5\\n",
+        "YEAR,SITE,TRAY,PELLET(count)\n"
+        "1985,FP1A,1,4\n"
+        "1985,FP1A,1,5\n",
         encoding="utf-8",
     )
     with pytest.raises(ValueError, match="duplicate BNZ tray key"):
