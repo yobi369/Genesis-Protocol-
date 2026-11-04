@@ -27,6 +27,7 @@ from .reference_ecology import (
     PopulationPoint,
     RosenzweigMacArthurParameters,
     calibrate_empirical_references,
+    empirical_naive_baselines,
     load_hudson_bay_csv,
     simulate_lotka_volterra,
     simulate_rosenzweig_macarthur,
@@ -730,6 +731,7 @@ def run_empirical_calibration(
             "observations": len(observations),
             "units": "historical trapping/pelt index; indirect abundance proxy",
         },
+        "naive_baselines": empirical_naive_baselines(observations),
         "ode_reference_calibration": calibrate_empirical_references(observations),
         "spatial_model_calibration": calibrate_spatial_to_empirical(observations, seeds),
     }
