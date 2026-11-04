@@ -304,7 +304,7 @@ def _benchmark_objectives(problem: str, rng: random.Random, count: int
     return rows
 
 
-def _deap_select(points: Sequence[Sequence[float]], capacity: int) -> tuple[int, ...]:
+def _deap_population(points: Sequence[Sequence[float]]) -> tuple[Any, Any, list[Any]]:
     try:
         from deap import base, tools
     except ImportError as exc:
@@ -320,6 +320,17 @@ def _deap_select(points: Sequence[Sequence[float]], capacity: int) -> tuple[int,
         item.fitness = fitness_type()
         item.fitness.values = tuple(float(value) for value in point)
         population.append(item)
+    return tools, fitness_type, population
+
+
+def _deap_first_front(points: Sequence[Sequence[float]]) -> set[int]:
+    tools, _, population = _deap_population(points)
+    front = tools.sortNondominated(population, k=len(population), first_front_only=True)[0]
+    return {item.row_index for item in front}
+
+
+def _deap_select(points: Sequence[Sequence[float]], capacity: int) -> tuple[int, ...]:
+    tools, _, population = _deap_population(points)
     fronts = tools.sortNondominated(population, k=len(population), first_front_only=False)
     ranked: list[tuple[int, float, int]] = []
     for rank, front in enumerate(fronts):
@@ -346,7 +357,7 @@ def run_nsga2_reference_benchmark(seeds: Sequence[int]) -> dict[str, Any]:
                 reference = _deap_select(points, capacity)
                 reference_seconds = time.perf_counter() - start
                 ours_ranks = nsga2_ranks(points)
-                deap_front = set(_deap_select(points, population_size))
+                deap_front = _deap_first_front(points)
                 ours_front = {index for index, rank in enumerate(ours_ranks) if rank == 0}
                 rows.append({
                     "problem": problem,
