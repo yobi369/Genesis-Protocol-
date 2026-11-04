@@ -25,5 +25,5 @@ def test_zero_energy_movement_organisms_do_not_survive() -> None:
 def test_genome_instruction_rejects_untyped_opcode() -> None:
     import pytest
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         Instruction("gather", 1)  # type: ignore[arg-type]
