@@ -6,9 +6,7 @@ biological realism. They do not call EcosystemEngine or its evaluator.
 from __future__ import annotations
 
 import random
-from collections import defaultdict
 from dataclasses import dataclass
-from math import prod
 from typing import Iterable, Sequence
 
 from .genome import Genome
