@@ -5,8 +5,8 @@ It is a research simulation, not a claim of biological equivalence.
 """
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
 import random
+from dataclasses import asdict, dataclass
 from statistics import mean
 from typing import Any
 
