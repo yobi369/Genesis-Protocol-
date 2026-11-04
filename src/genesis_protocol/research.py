@@ -164,11 +164,13 @@ class SpatialEcosystem:
                 if predator[2] <= 0:
                     del self.predators[predator_id]
             # Local prey form persistent, strengthening ties when co-located.
-            ids = sorted(self.prey)
-            for pos, left in enumerate(ids):
-                for right in ids[pos + 1:]:
-                    a, b = self.prey[left], self.prey[right]
-                    if a[0] == b[0] and a[1] == b[1]:
+            cell_members: dict[tuple[int, int], list[int]] = {}
+            for prey_id, agent in self.prey.items():
+                cell_members.setdefault((agent[0], agent[1]), []).append(prey_id)
+            for ids in cell_members.values():
+                ids.sort()
+                for position, left in enumerate(ids):
+                    for right in ids[position + 1:]:
                         key = (left, right)
                         self.ties[key] = min(10, self.ties.get(key, 0) + 1)
             # Bounded reproduction: successful prey can bud once per step.
