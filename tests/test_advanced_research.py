@@ -81,3 +81,7 @@ def test_predator_reproduction_campaign_reports_species_specific_holdout():
         "prey_log_rmse", "predator_log_rmse"
     }
     assert len(result["selected_replicates"]) == 30
+    assert len(result["baseline_seed_errors"]) == 30
+    assert "bootstrap_95_percentile_interval" in (
+        result["holdout_change_vs_baseline"]["predator_log_rmse"]
+    )
