@@ -6,6 +6,7 @@ unchanged as baselines. Outputs retain raw replicates and holdout boundaries.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import random
@@ -441,13 +442,17 @@ def run_advanced_campaign(
     observations = load_hudson_bay_csv(
         root / "data" / "empirical" / "hudson_bay_lynx_hare_1900_1920.csv"
     )
-    empirical_bonanza = None
+    bonanza_benchmark = None
     if bonanza_csv is not None:
-        bonanza_rows = load_bonanza_hare_pellets_csv(bonanza_csv)
-        empirical_bonanza = {
+        bonanza_path = Path(bonanza_csv)
+        bonanza_rows = load_bonanza_hare_pellets_csv(bonanza_path)
+        bonanza_benchmark = {
             "source": "Bonanza Creek LTER BNZ:69",
             "doi": "10.6073/pasta/5abe35f63e610b57068e9029961f4dee",
-            "raw_record_count": sum(row.tray_count for row in bonanza_rows),
+            "file_name": bonanza_path.name,
+            "file_sha256": hashlib.sha256(bonanza_path.read_bytes()).hexdigest(),
+            "observed_tray_records": sum(row.tray_count for row in bonanza_rows),
+            "missing_tray_records": sum(row.missing_tray_count for row in bonanza_rows),
             "site_year_observation_count": len(bonanza_rows),
             "benchmark": run_bonanza_prey_only_benchmark(bonanza_rows),
         }
@@ -456,13 +461,17 @@ def run_advanced_campaign(
         "seed_policy": {"count": seed_count, "seeds": list(seeds)},
         "predator_reproduction": run_predator_reproduction_experiment(observations, seeds),
         "richer_tree_operators": run_richer_tree_operator_smoke(seeds),
-        "independent_empirical_benchmarks": {
-            "bonanza_creek_bnz_69": empirical_bonanza,
-        },
+        "bonanza_prey_only_validation": (
+            bonanza_benchmark if bonanza_benchmark is not None else {
+                "status": "not_run_no_raw_csv_supplied",
+                "required_file": "BNZ:69 69_litter_wood_pellet_1985-2025.csv",
+            }
+        ),
         "empirical_dataset_registry": {
             "status": (
-                "Bonanza site-year importer and prey-only holdout benchmark implemented; "
-                "raw file not yet downloaded or executed"
+                "Bonanza raw CSV imported and prey-only benchmark executed"
+                if bonanza_benchmark is not None else
+                "Bonanza site-year importer implemented; raw file not supplied"
             ),
             "sources": [
                 {"name": "Bonanza Creek LTER BNZ:69 hare pellet trays", "years": "1985-2025",
@@ -492,16 +501,6 @@ def run_advanced_campaign(
             ),
         },
     }
-    if bonanza_csv is not None:
-        bonanza_observations = load_bonanza_hare_pellets_csv(bonanza_csv)
-        result["bonanza_prey_only_validation"] = run_bonanza_prey_only_benchmark(
-            bonanza_observations
-        )
-    else:
-        result["bonanza_prey_only_validation"] = {
-            "status": "not_run_no_raw_csv_supplied",
-            "required_file": "BNZ:69 69_litter_wood_pellet_1985-2025.csv",
-        }
     target = Path(output)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(result, indent=2, sort_keys=True), encoding="utf-8")
@@ -525,7 +524,7 @@ def main() -> None:
         "tree_operator_trials_per_seed": result["richer_tree_operators"]["operator_trials_per_seed"],
         "empirical_registry_status": result["empirical_dataset_registry"]["status"],
         "bonanza_benchmark_included": (
-            result["independent_empirical_benchmarks"]["bonanza_creek_bnz_69"] is not None
+            result["bonanza_prey_only_validation"].get("benchmark") is not None
         ),
     }, indent=2))
 
