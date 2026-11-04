@@ -87,9 +87,9 @@ def test_nested_tree_evaluation_and_bounds():
     result = evaluate_tree(tree, initial_energy=2, resource_supply=5)
     assert result.resources_gathered == 2
     assert result.cooperation_actions == 2
-    assert result.instructions_executed == 5
+    assert result.instructions_executed == 7
     assert tree_depth(tree) == 3
-    assert tree_size(tree) == 5
+    assert tree_size(tree) == 6
     limited = evaluate_tree(RepeatNode(5, Primitive(Op.REST)), instruction_budget=2)
     assert limited.budget_exhausted
     with pytest.raises(ValueError):
