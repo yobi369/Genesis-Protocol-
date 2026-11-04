@@ -42,8 +42,11 @@ jobs:
           print("Speciation distributions:", list(result["speciation_sensitivity"]["distributions"]))
           print("NSGA-II reference:", result["nsga2_reference_benchmark"]["reference"])
           print("Tree GP replicates:", len(result["tree_vs_linear_gp"]["replicates"]))
-          for name, model in result["empirical_calibration"]["models"].items():
+          empirical = result["empirical_calibration"]
+          for name, model in empirical["ode_reference_calibration"]["models"].items():
               print(name, "holdout log-RMSE:", model["holdout_log_rmse"])
+          print("spatial agent model holdout log-RMSE:",
+                empirical["spatial_model_calibration"]["holdout_log_rmse"])
           PY
       - uses: actions/upload-artifact@v4
         with:
