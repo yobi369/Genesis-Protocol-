@@ -1,8 +1,8 @@
 # Research Validation Results — 30 Paired Seeds
 
 **Campaign:** 2026-11-04  
-**Workflow run:** https://github.com/yobi369/Genesis-Protocol-/actions/runs/41797123315  
-**Raw artifact:** https://github.com/yobi369/Genesis-Protocol-/actions/runs/41797123315/artifacts/13306206999  
+**Workflow run:** https://github.com/yobi369/Genesis-Protocol-/actions/runs/41797358407  
+**Raw artifact:** https://github.com/yobi369/Genesis-Protocol-/actions/runs/41797358407/artifacts/13306056948  
 **Seed set:** 1001–1030, paired across conditions
 
 The machine-readable artifact is authoritative. This document summarizes the
